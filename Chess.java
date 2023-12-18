@@ -68,7 +68,6 @@ abstract class Piece {
 // Inheritance hierarchy for making different pieces
 
 // For white pieces
-
 class whitePawn extends Piece {
 	// Constructor
 	public whitePawn() {
