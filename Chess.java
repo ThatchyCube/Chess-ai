@@ -66,7 +66,7 @@ abstract class Piece {
 }
 
 // Inheritance hierarchy for making different pieces
-
+// Test
 // For white pieces
 class whitePawn extends Piece {
 
