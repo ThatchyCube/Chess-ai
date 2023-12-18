@@ -3,8 +3,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Chess {
-	private static boolean gameStarted = false;
-
 	// Execute application
 	public static void main(String args[]) {
 		// Build the frame
@@ -275,26 +273,6 @@ class ChessBoard extends JPanel {
 			new whiteQueen(), new whiteKing(), new whiteBishop(),
 			new whiteKnight(), new whiteRook()
 		};
-
-		// For setting up correct piece positions
-		int setX = 0, setY = 0;
-
-		// Set the coordinates for each piece
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (pieces[i][j] != null) {
-					// Set the piece positions
-					pieces[i][j].positionX = setX;
-					pieces[i][j].positionY = setY;
-
-					// Move to the next square
-					setX += sizeSquares;
-				}
-			}
-			// Move down a row
-				setY += sizeSquares;
-				setX = 0;
-		}	
 	}
 
 	// Override for drawing
@@ -334,6 +312,12 @@ class ChessBoard extends JPanel {
 
 				// Draw each square
 				g2d.fillRect(squareX, squareY, sizeSquares, sizeSquares);
+
+				// Set each piece to fit in it's square 
+				if (pieces[i][j] != null) {
+					pieces[i][j].positionX = squareX;
+					pieces[i][j].positionY = squareY;
+				}
 
 				// Move to the next square
 				squareX += sizeSquares;
