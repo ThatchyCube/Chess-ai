@@ -66,57 +66,102 @@ abstract class Piece {
 }
 
 // Inheritance hierarchy for making different pieces
-// Test
-// For white pieces
-class whitePawn extends Piece {
 
+// For white pieces
+
+class whitePawn extends Piece {
+	// Constructor
+	public whitePawn() {
+		position = new Coordinates;
+		color = "white";
+		displayPiece = "img/wP.png";
+	}
+
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class whiteKing extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class whiteQueen extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class whiteRook extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class whiteKnight extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class whiteBishop extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 // For black pieces
-class blackPawn extends Piece {
 
+class blackPawn extends Piece {
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class blackKing extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class blackQueen extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class blackRook extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class blackKnight extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
 
 class blackBishop extends Piece {
-
+	// Override for valid moves
+	public boolean isValid() {
+		return true;
+	}
 }
- 
+
 // Custom panel to draw on (Creates the board)
 class ChessBoard extends JPanel {
 	// Private data member variables
@@ -179,4 +224,3 @@ class ChessBoard extends JPanel {
 		}
 	}
 }
-
