@@ -41,7 +41,6 @@ abstract class Piece {
 // Inheritance hierarchy for making different pieces
 
 // For white pieces
-
 class whitePawn extends Piece {
 	// Constructor
 	public whitePawn() {
@@ -277,7 +276,15 @@ class ChessBoard extends JPanel {
 			new whiteKnight(), new whiteRook()
 		};
 	}
-
+    // Resize the ImageIcon to fit the square
+    private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
+		// Extract the Image object from the ImageIcon.
+        Image img = icon.getImage();
+		// Resize the image. 
+        Image resizedImage = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+		// Return the resized image as a new ImageIcon
+        return new ImageIcon(resizedImage);
+    }
 	// Override for drawing
 	public void paintComponent(Graphics g) {
 		// Call superclass's paintComponent
@@ -336,16 +343,15 @@ class ChessBoard extends JPanel {
 			squareY += sizeSquares;
 			squareX = 0;
 		}
-
 		// Draw the pieces 
-		for (int i = 0; i < rows; i++) {
-      			for (int j = 0; j < cols; j++) {
-				// Draw the piece
-		   		if (pieces[i][j] != null) {
-							ImageIcon currentPiece = pieces[i][j].displayPiece;
-                			currentPiece.paintIcon(this, g2d, pieces[i][j].positionX, pieces[i][j].positionY);
-       			}
-    		}
-		}
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (pieces[i][j] != null) {
+                    // Resize the piece icon
+                    ImageIcon resizedIcon = resizeIcon(pieces[i][j].displayPiece, sizeSquares, sizeSquares);
+                    resizedIcon.paintIcon(this, g, pieces[i][j].positionX, pieces[i][j].positionY);
+                }
+            }
+        }
 	}
 }
