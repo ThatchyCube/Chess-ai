@@ -241,8 +241,8 @@ class ChessBoard extends JPanel {
 	private Piece[][] pieces;
 
 	// Variables to keep track of clicks on the board
-	private int originalRowSelected = -1, originalColSelected = -1;
-	private int newRowSelected = -1, newColSelected = -1;
+	private int originalRowSelected, originalColSelected;
+	private int newRowSelected, newColSelected;
 
 	// Constructor
 	public ChessBoard() {
@@ -254,6 +254,12 @@ class ChessBoard extends JPanel {
 		addMouseListener(new MouseAdapter() {
 			// Override for clicking
 			public void mousePressed (MouseEvent e) {
+				// Set up tracking variables 
+				originalRowSelected = -1;
+				originalColSelected = -1;
+				newRowSelected = -1;
+				newColSelected = -1;
+
 				// Get the position where user clicks
 				int mouseX = e.getX();
 				int mouseY = e.getY();
@@ -285,6 +291,20 @@ class ChessBoard extends JPanel {
 				if (pieces[originalRowSelected][originalColSelected] != null 
 					&& originalRowSelected != -1 && originalColSelected != -1
 					&& newRowSelected != -1 && newColSelected != -1) {
+						// Check if the piece was moved onto itself
+						if (originalRowSelected == newRowSelected
+							&& originalColSelected == newColSelected) {
+								// Reset the position
+								pieces[originalRowSelected][originalColSelected].positionX = originalColSelected * sizeSquares;
+								pieces[originalRowSelected][originalColSelected].positionY = originalRowSelected * sizeSquares;
+								repaint();
+								return;
+						}
+
+						// Check if valid move
+						if (!pieces[originalRowSelected][originalColSelected].isValid())
+							return;
+
 						// Move the piece
 						pieces[newRowSelected][newColSelected] = pieces[originalRowSelected][originalColSelected];
 						pieces[originalRowSelected][originalColSelected] = null;
