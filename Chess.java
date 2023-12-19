@@ -244,6 +244,9 @@ class ChessBoard extends JPanel {
 	public ChessBoard() {
 		// Build a board full of null pieces
 		pieces = new Piece[rows][cols];
+
+		// Add the mouse listeners for piece interaction
+		
 	}
 	// Loads the pieces into the board array
 	public void loadPieces() {
