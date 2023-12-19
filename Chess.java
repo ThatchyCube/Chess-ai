@@ -304,26 +304,26 @@ class ChessBoard extends JPanel {
 		// Override for dragging
 		addMouseMotionListener(new MouseMotionAdapter() {
 				public void mouseDragged(MouseEvent e) {
-				int mouseX = 0, mouseY = 0;
-				// Check for invalid index
-				if (originalRowSelected != -1 && originalColSelected != -1) {
-					// Get the mouse position
-					mouseX = e.getX();
-					mouseY = e.getY();
+					int mouseX = 0, mouseY = 0;
+					// Check for invalid index
+					if (originalRowSelected != -1 && originalColSelected != -1) {
+						// Get the mouse position
+						mouseX = e.getX();
+						mouseY = e.getY();
 
-					// Get the beginning position
-					int originalMouseX = pieces[originalRowSelected][originalColSelected].positionX; 
-					int originalMouseY = pieces[originalRowSelected][originalColSelected].positionY; 
-					
-					// Get the change as the user drags
-					int changeX = mouseX - originalMouseX - sizeSquares / 2;
-					int changeY = mouseY - originalMouseY - sizeSquares  / 2;
+						// Get the beginning position
+						int originalMouseX = pieces[originalRowSelected][originalColSelected].positionX; 
+						int originalMouseY = pieces[originalRowSelected][originalColSelected].positionY; 
+						
+						// Get the change as the user drags
+						int changeX = mouseX - originalMouseX - sizeSquares / 2;
+						int changeY = mouseY - originalMouseY - sizeSquares  / 2;
 
-					// Update the position of the piece
-					pieces[originalRowSelected][originalColSelected].positionX = originalMouseX + changeX;
-					pieces[originalRowSelected][originalColSelected].positionY = originalMouseY + changeY;
-					
-					repaint();
+						// Update the position of the piece
+						pieces[originalRowSelected][originalColSelected].positionX = (originalMouseX + changeX);
+						pieces[originalRowSelected][originalColSelected].positionY = (originalMouseY + changeY);
+
+						repaint();
  				}
 			}
 		});
