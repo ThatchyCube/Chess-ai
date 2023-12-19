@@ -392,18 +392,18 @@ class ChessBoard extends JPanel {
 	// Override for drawing
 	public void paintComponent(Graphics g) {
 		// Call superclass's paintComponent
-  		super.paintComponent(g);
+		super.paintComponent(g);
 
- 		// Cast g to Graphics 2D
-  		Graphics2D g2d = (Graphics2D) g;  
+		// Cast g to Graphics 2D
+		Graphics2D g2d = (Graphics2D) g;  
 
 		// Get width and height of panel
 		panelWidth = getWidth();
 		panelHeight = getHeight();
 
 		// For getting the color of each square
-		int determineColor = 0;	
-	
+		int determineColor = 0;    
+
 		// Variables to draw board
 		squareX = 0;
 		squareY = 0;
@@ -427,10 +427,12 @@ class ChessBoard extends JPanel {
 				// Draw each square
 				g2d.fillRect(squareX, squareY, sizeSquares, sizeSquares);
 
-				// Set each piece to fit in it's square 
-				if (pieces[i][j] != null) {
+				// Set each piece to fit in its square if not being dragged
+				if (pieces[i][j] != null && !(i == originalRowSelected && j == originalColSelected)) {
 					pieces[i][j].positionX = squareX;
 					pieces[i][j].positionY = squareY;
+					ImageIcon resizedIcon = resizeIcon(pieces[i][j].displayPiece, sizeSquares, sizeSquares);
+					resizedIcon.paintIcon(this, g2d, pieces[i][j].positionX, pieces[i][j].positionY);
 				}
 
 				// Move to the next square
@@ -448,16 +450,11 @@ class ChessBoard extends JPanel {
 			squareX = 0;
 		}
 		
-		// Draw the pieces 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (pieces[i][j] != null) {
-                    // Resize the piece icon
-                    ImageIcon resizedIcon = resizeIcon(pieces[i][j].displayPiece, sizeSquares, sizeSquares);
-                    resizedIcon.paintIcon(this, g2d, pieces[i][j].positionX, pieces[i][j].positionY);
-					System.out.println(pieces[i][j].positionX);
-                }
-            }
-        }
+		// Draw the dragged piece at the cursor's position
+		if (originalRowSelected != -1 && originalColSelected != -1) {
+			Piece draggedPiece = pieces[originalRowSelected][originalColSelected];
+			ImageIcon resizedIcon = resizeIcon(draggedPiece.displayPiece, sizeSquares, sizeSquares);
+			resizedIcon.paintIcon(this, g2d, draggedPiece.positionX, draggedPiece.positionY);
+		}
 	}
 }
