@@ -240,14 +240,95 @@ class ChessBoard extends JPanel {
 	// Array to keep track of the piece positions
 	private Piece[][] pieces;
 
+	// Variables to keep track of clicks on the board
+	private int originalRowSelected = -1, originalColSelected = -1;
+	private int newRowSelected = -1, newColSelected = -1;
+
 	// Constructor
 	public ChessBoard() {
 		// Build a board full of null pieces
 		pieces = new Piece[rows][cols];
 
 		// Add the mouse listeners for piece interaction
+
+		addMouseListener(new MouseAdapter() {
+			// Override for clicking
+			public void mousePressed (MouseEvent e) {
+				// Get the position where user clicks
+				int mouseX = e.getX();
+				int mouseY = e.getY();
+
+				// Check if clicked inside board
+				if ((mouseX >= 0 && mouseX <= sizeSquares * 8) &&
+					(mouseY >= 0 && mouseY <= sizeSquares * 8)) {
+					// Get the icon that was clicked
+					originalRowSelected = mouseY / sizeSquares;
+					originalColSelected = mouseX / sizeSquares;
+				}
+			}
+
+			// Overrid for releasing
+			public void mouseReleased(MouseEvent e) {
+				// Get coordinates of current mouse location
+				int mouseX = e.getX();
+				int mouseY = e.getY();
+
+				// Get the location where the piece is dropped
+				if ((mouseX >= 0 && mouseX <= sizeSquares * 8) &&
+					(mouseY >= 0 && mouseY <= sizeSquares * 8)) {
+					// Get the icon that was clicked
+					newRowSelected = mouseY / sizeSquares;
+					newColSelected = mouseX / sizeSquares;
+				}
+
+				// Check for valid mouse release
+				if (pieces[originalRowSelected][originalColSelected] != null 
+					&& originalRowSelected != -1 && originalColSelected != -1
+					&& newRowSelected != -1 && newColSelected != -1) {
+						// Move the piece
+						pieces[newRowSelected][newColSelected] = pieces[originalRowSelected][originalColSelected];
+						pieces[originalRowSelected][originalColSelected] = null;
+					}
+
+				// Reset row and column trackers
+				originalRowSelected = -1;
+				originalColSelected = -1;
+				newRowSelected = -1;
+				newColSelected = -1;
 		
+				// Repaint the board
+				repaint();
+			}
+		});
+
+		// Override for dragging
+		addMouseMotionListener(new MouseMotionAdapter() {
+				public void mouseDragged(MouseEvent e) {
+				int mouseX = 0, mouseY = 0;
+				// Check for invalid index
+				if (originalRowSelected != -1 && originalColSelected != -1) {
+					// Get the mouse position
+					mouseX = e.getX();
+					mouseY = e.getY();
+
+					// Get the beginning position
+					int originalMouseX = pieces[originalRowSelected][originalColSelected].positionX; 
+					int originalMouseY = pieces[originalRowSelected][originalColSelected].positionY; 
+					
+					// Get the change as the user drags
+					int changeX = mouseX - originalMouseX - sizeSquares / 2;
+					int changeY = mouseY - originalMouseY - sizeSquares  / 2;
+
+					// Update the position of the piece
+					pieces[originalRowSelected][originalColSelected].positionX = originalMouseX + changeX;
+					pieces[originalRowSelected][originalColSelected].positionY = originalMouseY + changeY;
+					
+					repaint();
+ 				}
+			}
+		});
 	}
+
 	// Loads the pieces into the board array
 	public void loadPieces() {
 		// Set up the black pieces
@@ -276,15 +357,38 @@ class ChessBoard extends JPanel {
 			new whiteKnight(), new whiteRook()
 		};
 	}
-    // Resize the ImageIcon to fit the square
+	
+    // For resizing pieces 
     private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
-		// Extract the Image object from the ImageIcon.
+		// Get the piece and resize it
         Image img = icon.getImage();
-		// Resize the image. 
         Image resizedImage = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+
 		// Return the resized image as a new ImageIcon
         return new ImageIcon(resizedImage);
     }
+
+	// For swapping two piece positions
+	public void swapPieces(int nrs, int ncs, int ors, int ocs) {
+		// Save the original piece information
+		int tempPositionX = pieces[nrs][ncs].positionX;
+		int tempPositionY = pieces[nrs][ncs].positionY;
+		String tempColor = pieces[nrs][ncs].color;
+		ImageIcon tempDisplay = pieces[nrs][ncs].displayPiece;
+
+		// Swap the original piece with the new position
+		pieces[nrs][ncs].positionX = pieces[ors][ocs].positionX;
+		pieces[nrs][ncs].positionY = pieces[ors][ocs].positionY;
+		pieces[nrs][ncs].color = pieces[ors][ocs].color;
+		pieces[nrs][ncs].displayPiece = pieces[ors][ocs].displayPiece;
+
+		// Put the new location's piece in the old spot
+		pieces[nrs][ncs].positionX = tempPositionX;
+		pieces[nrs][ncs].positionY = tempPositionY;
+		pieces[nrs][ncs].color = tempColor;
+		pieces[nrs][ncs].displayPiece = tempDisplay;
+	}
+
 	// Override for drawing
 	public void paintComponent(Graphics g) {
 		// Call superclass's paintComponent
@@ -343,13 +447,15 @@ class ChessBoard extends JPanel {
 			squareY += sizeSquares;
 			squareX = 0;
 		}
+		
 		// Draw the pieces 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 if (pieces[i][j] != null) {
                     // Resize the piece icon
                     ImageIcon resizedIcon = resizeIcon(pieces[i][j].displayPiece, sizeSquares, sizeSquares);
-                    resizedIcon.paintIcon(this, g, pieces[i][j].positionX, pieces[i][j].positionY);
+                    resizedIcon.paintIcon(this, g2d, pieces[i][j].positionX, pieces[i][j].positionY);
+					System.out.println(pieces[i][j].positionX);
                 }
             }
         }
