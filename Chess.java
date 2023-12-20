@@ -36,6 +36,7 @@ abstract class Piece {
 
 	// Checks for valid move for current piece
 	public abstract boolean isValid();
+
 }
 
 // Inheritance hierarchy for making different pieces
@@ -244,6 +245,12 @@ class ChessBoard extends JPanel {
 	private int originalRowSelected, originalColSelected;
 	private int newRowSelected, newColSelected;
 
+	// Variable to control repaint frequency
+	private long lastRepaintTime = 0;
+
+	// Store the previous position of the chess piece that is being dragged
+	private int prevPosX = -1, prevPosY = -1;
+
 	// Constructor
 	public ChessBoard() {
 		// Build a board full of null pieces
@@ -320,31 +327,36 @@ class ChessBoard extends JPanel {
 				repaint();
 			}
 		});
-
 		// Override for dragging
 		addMouseMotionListener(new MouseMotionAdapter() {
-				public void mouseDragged(MouseEvent e) {
-					int mouseX = 0, mouseY = 0;
-					// Check for invalid index
-					if (originalRowSelected != -1 && originalColSelected != -1) {
-						// Get the mouse position
-						mouseX = e.getX();
-						mouseY = e.getY();
+			public void mouseDragged(MouseEvent e) {
+				// Check for valid piece selection
+				if (originalRowSelected != -1 && originalColSelected != -1 && pieces[originalRowSelected][originalColSelected] != null) {
+					// Get the current and previous positions of the piece
+					int currentPosX = e.getX() - sizeSquares / 2;
+					int currentPosY = e.getY() - sizeSquares / 2;
 
-						// Get the beginning position
-						int originalMouseX = pieces[originalRowSelected][originalColSelected].positionX; 
-						int originalMouseY = pieces[originalRowSelected][originalColSelected].positionY; 
-						
-						// Get the change as the user drags
-						int changeX = mouseX - originalMouseX - sizeSquares / 2;
-						int changeY = mouseY - originalMouseY - sizeSquares  / 2;
+					// Update the position of the piece
+					pieces[originalRowSelected][originalColSelected].positionX = currentPosX;
+					pieces[originalRowSelected][originalColSelected].positionY = currentPosY;
 
-						// Update the position of the piece
-						pieces[originalRowSelected][originalColSelected].positionX = (originalMouseX + changeX);
-						pieces[originalRowSelected][originalColSelected].positionY = (originalMouseY + changeY);
+					// Get the current time
+					long currentTime = System.currentTimeMillis();
 
-						repaint();
- 				}
+					// Repaint if enough time has passed since the last repaint
+					if (currentTime - lastRepaintTime > 15) {
+						// Repaint the previous and current areas of the piece
+						if (prevPosX != -1 && prevPosY != -1) {
+							repaint(prevPosX, prevPosY, sizeSquares, sizeSquares);
+						}
+						repaint(currentPosX, currentPosY, sizeSquares, sizeSquares);
+
+						// Update last repaint time and previous position
+						lastRepaintTime = currentTime;
+						prevPosX = currentPosX;
+						prevPosY = currentPosY;
+					}
+				}
 			}
 		});
 	}
