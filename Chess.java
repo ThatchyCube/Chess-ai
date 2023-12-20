@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Chess {
 	// Execute application
@@ -37,6 +39,7 @@ abstract class Piece {
 	// Checks for valid move for current piece
 	public abstract boolean isValid();
 
+	
 }
 
 // Inheritance hierarchy for making different pieces
@@ -245,12 +248,9 @@ class ChessBoard extends JPanel {
 	private int originalRowSelected, originalColSelected;
 	private int newRowSelected, newColSelected;
 
-	// Variable to control repaint frequency
-	private long lastRepaintTime = 0;
-
-	// Store the previous position of the chess piece that is being dragged
-	private int prevPosX = -1, prevPosY = -1;
-
+	// Cache for resized images
+    private Map<ImageIcon, ImageIcon> resizedImageCache = new HashMap<>();
+	
 	// Constructor
 	public ChessBoard() {
 		// Build a board full of null pieces
@@ -327,38 +327,34 @@ class ChessBoard extends JPanel {
 				repaint();
 			}
 		});
+
 		// Override for dragging
 		addMouseMotionListener(new MouseMotionAdapter() {
-			public void mouseDragged(MouseEvent e) {
-				// Check for valid piece selection
-				if (originalRowSelected != -1 && originalColSelected != -1 && pieces[originalRowSelected][originalColSelected] != null) {
-					// Get the current and previous positions of the piece
-					int currentPosX = e.getX() - sizeSquares / 2;
-					int currentPosY = e.getY() - sizeSquares / 2;
+				public void mouseDragged(MouseEvent e) {
+					int mouseX = 0, mouseY = 0;
+					// Check for invalid index
+					if (originalRowSelected != -1 && originalColSelected != -1) {
+						// Get the mouse position
+						mouseX = e.getX();
+						mouseY = e.getY();
 
-					// Update the position of the piece
-					pieces[originalRowSelected][originalColSelected].positionX = currentPosX;
-					pieces[originalRowSelected][originalColSelected].positionY = currentPosY;
+						// Get the beginning position
+						int originalMouseX = pieces[originalRowSelected][originalColSelected].positionX; 
+						int originalMouseY = pieces[originalRowSelected][originalColSelected].positionY; 
+						
+						// Get the change as the user drags
+						int changeX = mouseX - originalMouseX - sizeSquares / 2;
+						int changeY = mouseY - originalMouseY - sizeSquares  / 2;
 
-					// Get the current time
-					long currentTime = System.currentTimeMillis();
+						// Update the position of the piece
+						pieces[originalRowSelected][originalColSelected].positionX = (originalMouseX + changeX);
+						pieces[originalRowSelected][originalColSelected].positionY = (originalMouseY + changeY);
 
-					// Repaint if enough time has passed since the last repaint
-					if (currentTime - lastRepaintTime > 15) {
-						// Repaint the previous and current areas of the piece
-						if (prevPosX != -1 && prevPosY != -1) {
-							repaint(prevPosX, prevPosY, sizeSquares, sizeSquares);
-						}
-						repaint(currentPosX, currentPosY, sizeSquares, sizeSquares);
-
-						// Update last repaint time and previous position
-						lastRepaintTime = currentTime;
-						prevPosX = currentPosX;
-						prevPosY = currentPosY;
-					}
-				}
+						repaint();
+ 				}
 			}
 		});
+		
 	}
 
 	// Loads the pieces into the board array
@@ -390,14 +386,22 @@ class ChessBoard extends JPanel {
 		};
 	}
 	
-    // For resizing pieces 
+    // Updated resizeIcon method
     private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
-		// Get the piece and resize it
+        // Check the cache first
+        ImageIcon cachedIcon = resizedImageCache.get(icon);
+        if (cachedIcon != null) {
+            return cachedIcon;
+        }
+
+        // Resize the image if not in cache
         Image img = icon.getImage();
         Image resizedImage = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
 
-		// Return the resized image as a new ImageIcon
-        return new ImageIcon(resizedImage);
+        // Add to cache and return
+        resizedImageCache.put(icon, resizedIcon);
+        return resizedIcon;
     }
 
 	// For swapping two piece positions
@@ -439,7 +443,14 @@ class ChessBoard extends JPanel {
 		// Variables to draw board
 		squareX = 0;
 		squareY = 0;
-		sizeSquares = ((Math.min(panelWidth, panelHeight) * 4) / 5) / 8;
+		int newSquareSize = ((Math.min(panelWidth, panelHeight) * 4) / 5) / 8;
+
+		// Update cache if square size has changed
+		if (this.sizeSquares != newSquareSize) {
+			// Clear the cache as the size has changed
+			resizedImageCache.clear();
+			this.sizeSquares = newSquareSize;
+		}
 
 		// For displaying pieces initially
 		if (!setPiecesBegin) {
@@ -470,7 +481,6 @@ class ChessBoard extends JPanel {
 				// Move to the next square
 				squareX += sizeSquares;
 			}
-
 			// Get the color pattern for the next row
 			if (i % 2 == 0)
 				determineColor = 1;
