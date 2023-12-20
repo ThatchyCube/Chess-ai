@@ -38,193 +38,6 @@ abstract class Piece {
 
 	// Checks for valid move for current piece
 	public abstract boolean isValid();
-
-	
-}
-
-// Inheritance hierarchy for making different pieces
-
-// For white pieces
-class whitePawn extends Piece {
-	// Constructor
-	public whitePawn() {
-		positionX = 0;
-		positionY = 0;
-		color = "white";
-		displayPiece = new ImageIcon(getClass().getResource("img/wP.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class whiteKing extends Piece {
-	// Constructor
-	public whiteKing() {
-		positionX = 0;
-		positionY = 0;
-		color = "white";
-		displayPiece = new ImageIcon(getClass().getResource("img/wK.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class whiteQueen extends Piece {
-	// Constructor
-	public whiteQueen() {
-		positionX = 0;
-		positionY = 0;
-		color = "white";
-		displayPiece = new ImageIcon(getClass().getResource("img/wQ.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class whiteRook extends Piece {
-	// Constructor
-	public whiteRook() {
-		positionX = 0;
-		positionY = 0;
-		color = "white";
-		displayPiece = new ImageIcon(getClass().getResource("img/wR.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class whiteKnight extends Piece {
-	// Constructor
-	public whiteKnight() {
-		positionX = 0;
-		positionY = 0;
-		color = "white";
-		displayPiece = new ImageIcon(getClass().getResource("img/wN.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class whiteBishop extends Piece {
-	// Constructor
-	public whiteBishop() {
-		positionX = 0;
-		positionY = 0;
-		color = "white";
-		displayPiece = new ImageIcon(getClass().getResource("img/wB.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-// For black pieces
-
-class blackPawn extends Piece {
-	// Constructor
-	public blackPawn() {
-		positionX = 0;
-		positionY = 0;
-		color = "black";
-		displayPiece = new ImageIcon(getClass().getResource("img/bP.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class blackKing extends Piece {
-	// Constructor
-	public blackKing() {
-		positionX = 0;
-		positionY = 0;
-		color = "black";
-		displayPiece = new ImageIcon(getClass().getResource("img/bK.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class blackQueen extends Piece {
-	// Constructor
-	public blackQueen() {
-		positionX = 0;
-		positionY = 0;
-		color = "black";
-		displayPiece = new ImageIcon(getClass().getResource("img/bQ.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class blackRook extends Piece {
-	// Constructor
-	public blackRook() {
-		positionX = 0;
-		positionY = 0;
-		color = "black";
-		displayPiece = new ImageIcon(getClass().getResource("img/bR.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class blackKnight extends Piece {
-	// Constructor
-	public blackKnight() {
-		positionX = 0;
-		positionY = 0;
-		color = "black";
-		displayPiece = new ImageIcon(getClass().getResource("img/bN.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
-}
-
-class blackBishop extends Piece {
-	// Constructor
-	public blackBishop() {
-		positionX = 0;
-		positionY = 0;
-		color = "black";
-		displayPiece = new ImageIcon(getClass().getResource("img/bB.png"));
-	}
-
-	// Override for valid moves
-	public boolean isValid() {
-		return true;
-	}
 }
 
 // Custom panel to draw on (Creates the board)
@@ -245,12 +58,271 @@ class ChessBoard extends JPanel {
 	private Piece[][] pieces;
 
 	// Variables to keep track of clicks on the board
-	private int originalRowSelected, originalColSelected;
+	private int oldRowSelected, oldColSelected;
 	private int newRowSelected, newColSelected;
 
 	// Cache for resized images
     private Map<ImageIcon, ImageIcon> resizedImageCache = new HashMap<>();
-	
+
+	// Nested class inheritance hierarchy for making different pieces
+
+	// For white pieces
+	class whitePawn extends Piece {
+		// For tracking if the current pawn has been moved
+		private boolean movedAlready;
+
+		// Constructor
+		public whitePawn() {
+			positionX = 0;
+			positionY = 0;
+			color = "white";
+			movedAlready = false;
+			displayPiece = new ImageIcon(getClass().getResource("img/wP.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			// Check for diagonal capture
+			if (newRowSelected == oldRowSelected - 1
+				&& (newColSelected == oldColSelected + 1
+				|| newColSelected == oldColSelected - 1)) {
+					if (pieces[newRowSelected][newColSelected] != null 
+						&& pieces[newRowSelected][newColSelected].color == "black") {
+						// Black piece can be diagnally captured
+						movedAlready = true;
+						return true;
+				}
+			}
+
+			// Check if a piece is blocking the pawn
+			if (pieces[newRowSelected][newColSelected] != null)
+				return false;
+
+			// Check if the pawn has been moved
+			if (!movedAlready) {
+				// Pawn has option to move two squares
+				if (newColSelected == oldColSelected
+					&& (newRowSelected == oldRowSelected - 2
+					|| newRowSelected == oldRowSelected - 1)) {
+					// Correct move made
+					movedAlready = true;
+					return true;
+				} else 
+					return false;
+			} else {
+				if (newColSelected == oldColSelected
+					&& newRowSelected == oldRowSelected - 1)
+					return true;
+				else 
+					return false;
+			}
+		}
+	}
+
+	class whiteKing extends Piece {
+		// Constructor
+		public whiteKing() {
+			positionX = 0;
+			positionY = 0;
+			color = "white";
+			displayPiece = new ImageIcon(getClass().getResource("img/wK.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class whiteQueen extends Piece {
+		// Constructor
+		public whiteQueen() {
+			positionX = 0;
+			positionY = 0;
+			color = "white";
+			displayPiece = new ImageIcon(getClass().getResource("img/wQ.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class whiteRook extends Piece {
+		// Constructor
+		public whiteRook() {
+			positionX = 0;
+			positionY = 0;
+			color = "white";
+			displayPiece = new ImageIcon(getClass().getResource("img/wR.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class whiteKnight extends Piece {
+		// Constructor
+		public whiteKnight() {
+			positionX = 0;
+			positionY = 0;
+			color = "white";
+			displayPiece = new ImageIcon(getClass().getResource("img/wN.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class whiteBishop extends Piece {
+		// Constructor
+		public whiteBishop() {
+			positionX = 0;
+			positionY = 0;
+			color = "white";
+			displayPiece = new ImageIcon(getClass().getResource("img/wB.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	// For black pieces
+
+	class blackPawn extends Piece {
+		// For tracking if the current pawn has been moved
+		private boolean movedAlready;
+
+		// Constructor
+		public blackPawn() {
+			positionX = 0;
+			positionY = 0;
+			color = "black";
+			movedAlready = false;
+			displayPiece = new ImageIcon(getClass().getResource("img/bP.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			// Check for diagonal capture
+			if (newRowSelected == oldRowSelected + 1
+				&& (newColSelected == oldColSelected + 1
+				|| newColSelected == oldColSelected - 1)) {
+					if (pieces[newRowSelected][newColSelected] != null 
+						&& pieces[newRowSelected][newColSelected].color == "white") {
+						// Black piece can be diagnally captured
+						movedAlready = true;
+						return true;
+				}
+			}
+			
+			// Check if a piece is blocking the pawn
+			if (pieces[newRowSelected][newColSelected] != null)
+				return false;
+
+			// Check if the pawn has been moved
+			if (!movedAlready) {
+				// Pawn has option to move two squares
+				if (newColSelected == oldColSelected
+					&& (newRowSelected == oldRowSelected + 2
+					|| newRowSelected == oldRowSelected + 1)) {
+					// Correct move made
+					movedAlready = true;
+					return true;
+				} else 
+					return false;
+			} else {
+				if (newColSelected == oldColSelected
+					&& newRowSelected == oldRowSelected + 1)
+					return true;
+				else 
+					return false;
+			}
+		}
+	}
+
+	class blackKing extends Piece {
+		// Constructor
+		public blackKing() {
+			positionX = 0;
+			positionY = 0;
+			color = "black";
+			displayPiece = new ImageIcon(getClass().getResource("img/bK.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class blackQueen extends Piece {
+		// Constructor
+		public blackQueen() {
+			positionX = 0;
+			positionY = 0;
+			color = "black";
+			displayPiece = new ImageIcon(getClass().getResource("img/bQ.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class blackRook extends Piece {
+		// Constructor
+		public blackRook() {
+			positionX = 0;
+			positionY = 0;
+			color = "black";
+			displayPiece = new ImageIcon(getClass().getResource("img/bR.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class blackKnight extends Piece {
+		// Constructor
+		public blackKnight() {
+			positionX = 0;
+			positionY = 0;
+			color = "black";
+			displayPiece = new ImageIcon(getClass().getResource("img/bN.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
+	class blackBishop extends Piece {
+		// Constructor
+		public blackBishop() {
+			positionX = 0;
+			positionY = 0;
+			color = "black";
+			displayPiece = new ImageIcon(getClass().getResource("img/bB.png"));
+		}
+
+		// Override for valid moves
+		public boolean isValid() {
+			return true;
+		}
+	}
+
 	// Constructor
 	public ChessBoard() {
 		// Build a board full of null pieces
@@ -262,8 +334,8 @@ class ChessBoard extends JPanel {
 			// Override for clicking
 			public void mousePressed (MouseEvent e) {
 				// Set up tracking variables 
-				originalRowSelected = -1;
-				originalColSelected = -1;
+				oldRowSelected = -1;
+				oldColSelected = -1;
 				newRowSelected = -1;
 				newColSelected = -1;
 
@@ -275,8 +347,8 @@ class ChessBoard extends JPanel {
 				if ((mouseX >= 0 && mouseX <= sizeSquares * 8) &&
 					(mouseY >= 0 && mouseY <= sizeSquares * 8)) {
 					// Get the icon that was clicked
-					originalRowSelected = mouseY / sizeSquares;
-					originalColSelected = mouseX / sizeSquares;
+					oldRowSelected = mouseY / sizeSquares;
+					oldColSelected = mouseX / sizeSquares;
 				}
 			}
 
@@ -295,31 +367,31 @@ class ChessBoard extends JPanel {
 				}
 
 				// Check for valid mouse release
-				if (pieces[originalRowSelected][originalColSelected] != null 
-					&& originalRowSelected != -1 && originalColSelected != -1
+				if (pieces[oldRowSelected][oldColSelected] != null 
+					&& oldRowSelected != -1 && oldColSelected != -1
 					&& newRowSelected != -1 && newColSelected != -1) {
 						// Check if the piece was moved onto itself
-						if (originalRowSelected == newRowSelected
-							&& originalColSelected == newColSelected) {
+						if (oldRowSelected == newRowSelected
+							&& oldColSelected == newColSelected) {
 								// Reset the position
-								pieces[originalRowSelected][originalColSelected].positionX = originalColSelected * sizeSquares;
-								pieces[originalRowSelected][originalColSelected].positionY = originalRowSelected * sizeSquares;
-								repaint();
+								reset();
 								return;
 						}
 
 						// Check if valid move
-						if (!pieces[originalRowSelected][originalColSelected].isValid())
+						if (!pieces[oldRowSelected][oldColSelected].isValid()) {
+							reset();
 							return;
+						}
 
-						// Move the piece
-						pieces[newRowSelected][newColSelected] = pieces[originalRowSelected][originalColSelected];
-						pieces[originalRowSelected][originalColSelected] = null;
+						// Otherwise move the piece
+						pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+						pieces[oldRowSelected][oldColSelected] = null;
 					}
 
 				// Reset row and column trackers
-				originalRowSelected = -1;
-				originalColSelected = -1;
+				oldRowSelected = -1;
+				oldColSelected = -1;
 				newRowSelected = -1;
 				newColSelected = -1;
 		
@@ -333,22 +405,22 @@ class ChessBoard extends JPanel {
 				public void mouseDragged(MouseEvent e) {
 					int mouseX = 0, mouseY = 0;
 					// Check for invalid index
-					if (originalRowSelected != -1 && originalColSelected != -1) {
+					if (oldRowSelected != -1 && oldColSelected != -1) {
 						// Get the mouse position
 						mouseX = e.getX();
 						mouseY = e.getY();
 
 						// Get the beginning position
-						int originalMouseX = pieces[originalRowSelected][originalColSelected].positionX; 
-						int originalMouseY = pieces[originalRowSelected][originalColSelected].positionY; 
+						int originalMouseX = pieces[oldRowSelected][oldColSelected].positionX; 
+						int originalMouseY = pieces[oldRowSelected][oldColSelected].positionY; 
 						
 						// Get the change as the user drags
 						int changeX = mouseX - originalMouseX - sizeSquares / 2;
 						int changeY = mouseY - originalMouseY - sizeSquares  / 2;
 
 						// Update the position of the piece
-						pieces[originalRowSelected][originalColSelected].positionX = (originalMouseX + changeX);
-						pieces[originalRowSelected][originalColSelected].positionY = (originalMouseY + changeY);
+						pieces[oldRowSelected][oldColSelected].positionX = (originalMouseX + changeX);
+						pieces[oldRowSelected][oldColSelected].positionY = (originalMouseY + changeY);
 
 						repaint();
  				}
@@ -358,7 +430,7 @@ class ChessBoard extends JPanel {
 	}
 
 	// Loads the pieces into the board array
-	public void loadPieces() {
+	private void loadPieces() {
 		// Set up the black pieces
 		pieces[0] = new Piece[] {
 			new blackRook(), new blackKnight(), new blackBishop(),
@@ -405,7 +477,7 @@ class ChessBoard extends JPanel {
     }
 
 	// For swapping two piece positions
-	public void swapPieces(int nrs, int ncs, int ors, int ocs) {
+	private void swapPieces(int nrs, int ncs, int ors, int ocs) {
 		// Save the original piece information
 		int tempPositionX = pieces[nrs][ncs].positionX;
 		int tempPositionY = pieces[nrs][ncs].positionY;
@@ -425,8 +497,16 @@ class ChessBoard extends JPanel {
 		pieces[nrs][ncs].displayPiece = tempDisplay;
 	}
 
+	// For resetting a pieces position
+	private void reset() {
+		// Put the piece back in it's original square and center it
+		pieces[oldRowSelected][oldColSelected].positionX = oldColSelected * sizeSquares;
+		pieces[oldRowSelected][oldColSelected].positionY = oldRowSelected * sizeSquares;
+		repaint();
+	}
+
 	// Override for drawing
-	public void paintComponent(Graphics g) {
+	protected void paintComponent(Graphics g) {
 		// Call superclass's paintComponent
 		super.paintComponent(g);
 
@@ -471,7 +551,7 @@ class ChessBoard extends JPanel {
 				g2d.fillRect(squareX, squareY, sizeSquares, sizeSquares);
 
 				// Set each piece to fit in its square if not being dragged
-				if (pieces[i][j] != null && !(i == originalRowSelected && j == originalColSelected)) {
+				if (pieces[i][j] != null && !(i == oldRowSelected && j == oldColSelected)) {
 					pieces[i][j].positionX = squareX;
 					pieces[i][j].positionY = squareY;
 					ImageIcon resizedIcon = resizeIcon(pieces[i][j].displayPiece, sizeSquares, sizeSquares);
@@ -492,11 +572,13 @@ class ChessBoard extends JPanel {
 			squareX = 0;
 		}
 		
-		// Draw the dragged piece at the cursor's position
-		if (originalRowSelected != -1 && originalColSelected != -1) {
-			Piece draggedPiece = pieces[originalRowSelected][originalColSelected];
-			ImageIcon resizedIcon = resizeIcon(draggedPiece.displayPiece, sizeSquares, sizeSquares);
-			resizedIcon.paintIcon(this, g2d, draggedPiece.positionX, draggedPiece.positionY);
+		// Draw any dragged pieces at the cursor's position
+		if (oldRowSelected != -1 && oldColSelected != -1) {
+			if (pieces[oldRowSelected][oldColSelected] != null) {
+				Piece draggedPiece = pieces[oldRowSelected][oldColSelected];
+				ImageIcon resizedIcon = resizeIcon(draggedPiece.displayPiece, sizeSquares, sizeSquares);
+				resizedIcon.paintIcon(this, g2d, draggedPiece.positionX, draggedPiece.positionY);
+			}
 		}
 	}
 }
