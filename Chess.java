@@ -241,7 +241,6 @@ class ChessBoard extends JPanel {
 	}
 
 	class whiteBishop extends Piece {
-		// Constructor
 		public whiteBishop() {
 			positionX = 0;
 			positionY = 0;
@@ -250,10 +249,47 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
+		@Override
 		public boolean isValid() {
+			int rowDiff = Math.abs(newRowSelected - oldRowSelected);
+			int colDiff = Math.abs(newColSelected - oldColSelected);
+
+			// Bishop moves only diagonally
+			if (rowDiff == colDiff) {
+				// Check if the path is clear
+				if (isPathClear(oldRowSelected, oldColSelected, newRowSelected, newColSelected)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Check if the path is clear
+		private boolean isPathClear(int oldRow, int oldCol, int newRow, int newCol) {
+			int rowStep = Integer.compare(newRow, oldRow);
+			int colStep = Integer.compare(newCol, oldCol);
+
+			int currentRow = oldRow + rowStep;
+			int currentCol = oldCol + colStep;
+
+			// Check each square along the path for any piece
+			while (currentRow != newRow && currentCol != newCol) {
+				if (pieces[currentRow][currentCol] != null) {
+					return false;
+				}
+				currentRow += rowStep;
+				currentCol += colStep;
+			}
+
+			// Check if the dest square has a same color piece
+			if (pieces[newRow][newCol] != null && pieces[newRow][newCol].color.equals("white")) {
+				return false;
+			}
 			return true;
 		}
 	}
+
+
 
 	// For black pieces
 
@@ -433,7 +469,42 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
+		@Override
 		public boolean isValid() {
+			int rowDiff = Math.abs(newRowSelected - oldRowSelected);
+			int colDiff = Math.abs(newColSelected - oldColSelected);
+
+			// Bishop moves only diagonally
+			if (rowDiff == colDiff) {
+				// Check if the path is clear
+				if (isPathClear(oldRowSelected, oldColSelected, newRowSelected, newColSelected)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Check if the path is clear
+		private boolean isPathClear(int oldRow, int oldCol, int newRow, int newCol) {
+			int rowStep = Integer.compare(newRow, oldRow);
+			int colStep = Integer.compare(newCol, oldCol);
+
+			int currentRow = oldRow + rowStep;
+			int currentCol = oldCol + colStep;
+
+			// Check each square along the path for any piece
+			while (currentRow != newRow && currentCol != newCol) {
+				if (pieces[currentRow][currentCol] != null) {
+					return false;
+				}
+				currentRow += rowStep;
+				currentCol += colStep;
+			}
+
+			// Check if the dest square has a same color piece
+			if (pieces[newRow][newCol] != null && pieces[newRow][newCol].color.equals("black")) {
+				return false;
+			}
 			return true;
 		}
 	}
@@ -648,7 +719,7 @@ class ChessBoard extends JPanel {
 
 		// Cast g to Graphics 2D
 		Graphics2D g2d = (Graphics2D) g;  
-
+		
 		// Get width and height of panel
 		panelWidth = getWidth();
 		panelHeight = getHeight();
@@ -707,7 +778,14 @@ class ChessBoard extends JPanel {
 			squareY += sizeSquares;
 			squareX = 0;
 		}
-		
+
+		// Ensure the turn indicator label is always visible depending on resolution
+		int boardRightEdge = squareX + (sizeSquares * cols);
+    	int labelXPosition = boardRightEdge + 20;
+    	int labelYPosition = 30;
+		// Set the position of the indicator label
+		turnIndicator.setBounds(labelXPosition, labelYPosition, turnIndicator.getPreferredSize().width, turnIndicator.getPreferredSize().height);
+
 		// Draw any dragged pieces at the cursor's position
 		if (oldRowSelected != -1 && oldColSelected != -1) {
 			if (pieces[oldRowSelected][oldColSelected] != null) {
