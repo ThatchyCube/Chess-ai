@@ -24,6 +24,7 @@ public class Chess {
 
 		// Make the frame visible
   		frame.setVisible(true);
+
 	}
 }
 
@@ -64,8 +65,13 @@ class ChessBoard extends JPanel {
 	// Cache for resized images
     private Map<ImageIcon, ImageIcon> resizedImageCache = new HashMap<>();
 
-	// Nested class inheritance hierarchy for making different pieces
+ 	// Define variables for keeping track of turns
+	private boolean isWhiteTurn = true;
 
+	// Declare as a class member
+	private JLabel turnIndicator;
+
+	// Nested class inheritance hierarchy for making different pieces
 	// For white pieces
 	class whitePawn extends Piece {
 		// For tracking if the current pawn has been moved
@@ -150,33 +156,88 @@ class ChessBoard extends JPanel {
 	}
 
 	class whiteRook extends Piece {
-		// Constructor
-		public whiteRook() {
-			positionX = 0;
-			positionY = 0;
-			color = "white";
-			displayPiece = new ImageIcon(getClass().getResource("img/wR.png"));
-		}
 
-		// Override for valid moves
-		public boolean isValid() {
-			return true;
-		}
+	    // Constructor
+	    public whiteRook() {
+	        positionX = 0;
+	        positionY = 0;
+	        color = "white";
+	        displayPiece = new ImageIcon(getClass().getResource("img/wR.png"));
+	    }
+
+	    // Override for valid moves
+	    @Override
+	    public boolean isValid() {
+	        // Rook moves horizontally or vertically
+	        if (newRowSelected == oldRowSelected || newColSelected == oldColSelected) {
+	            // Check if the path is clear
+	            if (isPathClear(oldRowSelected, oldColSelected, newRowSelected, newColSelected)) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
+
+	    // Method to check if the path is clear
+		private boolean isPathClear(int oldRow, int oldCol, int newRow, int newCol) {
+			int rowStep = Integer.compare(newRow, oldRow);
+			int colStep = Integer.compare(newCol, oldCol);
+
+			int currentRow = oldRow + rowStep;
+			int currentCol = oldCol + colStep;
+
+			// Check each square along the path for any piece
+			while (currentRow != newRow || currentCol != newCol) {
+				// If the current square has a piece
+				if (pieces[currentRow][currentCol] != null) {
+					// If it's the last square (destination) check if it's a different color
+					if (currentRow == newRow - rowStep && currentCol == newCol - colStep) {
+						return !pieces[currentRow][currentCol].color.equals("white");
+					}
+					// If it's not the destination square, the path is blocked
+					return false;
+				}
+				currentRow += rowStep;
+				currentCol += colStep;
+			}
+
+	        if (pieces[newRow][newCol] != null) {
+	            // Check if the destination square is not a piece of the same color
+	            if (pieces[newRow][newCol].color.equals("white")) {
+	                return false;
+	            }
+	        }
+	        // Path is clear
+	        return true;
+	    }
 	}
 
 	class whiteKnight extends Piece {
-		// Constructor
-		public whiteKnight() {
-			positionX = 0;
-			positionY = 0;
-			color = "white";
-			displayPiece = new ImageIcon(getClass().getResource("img/wN.png"));
-		}
+	    // Constructor
+	    public whiteKnight() {
+	        positionX = 0;
+	        positionY = 0;
+	        color = "white";
+	        displayPiece = new ImageIcon(getClass().getResource("img/wN.png"));
+	    }
 
-		// Override for valid moves
-		public boolean isValid() {
-			return true;
-		}
+	    // Override for valid moves
+	    @Override
+	    public boolean isValid() {
+	        // Calculate the difference in position
+	        int rowDiff = Math.abs(newRowSelected - oldRowSelected);
+	        int colDiff = Math.abs(newColSelected - oldColSelected);
+
+	        // Check for Lshaped move
+	        if ((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2)) {
+	            // Check if the destination square is not occupied by a piece of the same color
+	            if (pieces[newRowSelected][newColSelected] == null ||
+	                !pieces[newRowSelected][newColSelected].color.equals("white")) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
 	}
 
 	class whiteBishop extends Piece {
@@ -279,33 +340,87 @@ class ChessBoard extends JPanel {
 	}
 
 	class blackRook extends Piece {
-		// Constructor
-		public blackRook() {
-			positionX = 0;
-			positionY = 0;
-			color = "black";
-			displayPiece = new ImageIcon(getClass().getResource("img/bR.png"));
-		}
+	    // Constructor
+	    public blackRook() {
+	        positionX = 0;
+	        positionY = 0;
+	        color = "black";
+	        displayPiece = new ImageIcon(getClass().getResource("img/bR.png"));
+	    }
 
-		// Override for valid moves
-		public boolean isValid() {
-			return true;
-		}
+	    // Override for valid moves
+	    @Override
+	    public boolean isValid() {
+	        // Rook moves horizontally or vertically
+	        if (newRowSelected == oldRowSelected || newColSelected == oldColSelected) {
+	            // Check if the path is clear
+	            if (isPathClear(oldRowSelected, oldColSelected, newRowSelected, newColSelected)) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
+
+	    // Method to check if the path is clear
+		private boolean isPathClear(int oldRow, int oldCol, int newRow, int newCol) {
+			int rowStep = Integer.compare(newRow, oldRow);
+			int colStep = Integer.compare(newCol, oldCol);
+
+			int currentRow = oldRow + rowStep;
+			int currentCol = oldCol + colStep;
+
+			// Check each square along the path for any piece
+			while (currentRow != newRow || currentCol != newCol) {
+				// If the current square has a piece
+				if (pieces[currentRow][currentCol] != null) {
+					// If it's the last square (destination) check if it's a different color
+					if (currentRow == newRow - rowStep && currentCol == newCol - colStep) {
+						return !pieces[currentRow][currentCol].color.equals("black");
+					}
+					// If it's not the destination square, the path is blocked
+					return false;
+				}
+				currentRow += rowStep;
+				currentCol += colStep;
+			}
+
+	        if (pieces[newRow][newCol] != null) {
+	            // Check if the destination square is not a piece of the same color
+	            if (pieces[newRow][newCol].color.equals("black")) {
+	                return false;
+	            }
+	        }
+	        // Path is clear
+	        return true;
+	    }
 	}
 
 	class blackKnight extends Piece {
-		// Constructor
-		public blackKnight() {
-			positionX = 0;
-			positionY = 0;
-			color = "black";
-			displayPiece = new ImageIcon(getClass().getResource("img/bN.png"));
-		}
+	    // Constructor
+	    public blackKnight() {
+	        positionX = 0;
+	        positionY = 0;
+	        color = "black";
+	        displayPiece = new ImageIcon(getClass().getResource("img/bN.png"));
+	    }
 
-		// Override for valid moves
-		public boolean isValid() {
-			return true;
-		}
+	    // Override for valid moves
+	    @Override
+	    public boolean isValid() {
+	        // Difference in position
+	        int rowDiff = Math.abs(newRowSelected - oldRowSelected);
+	        int colDiff = Math.abs(newColSelected - oldColSelected);
+
+	        // Check for Lshaped move
+	        if ((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2)) {
+	            // Check if the destination square is not a piece of the same color
+	            if (pieces[newRowSelected][newColSelected] == null ||
+	                !pieces[newRowSelected][newColSelected].color.equals("black")) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
 	}
 
 	class blackBishop extends Piece {
@@ -329,7 +444,6 @@ class ChessBoard extends JPanel {
 		pieces = new Piece[rows][cols];
 
 		// Add the mouse listeners for piece interaction
-
 		addMouseListener(new MouseAdapter() {
 			// Override for clicking
 			public void mousePressed (MouseEvent e) {
@@ -352,7 +466,8 @@ class ChessBoard extends JPanel {
 				}
 			}
 
-			// Overrid for releasing
+			// Override for releasing
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				// Get coordinates of current mouse location
 				int mouseX = e.getX();
@@ -370,31 +485,47 @@ class ChessBoard extends JPanel {
 				if (pieces[oldRowSelected][oldColSelected] != null 
 					&& oldRowSelected != -1 && oldColSelected != -1
 					&& newRowSelected != -1 && newColSelected != -1) {
-						// Check if the piece was moved onto itself
-						if (oldRowSelected == newRowSelected
-							&& oldColSelected == newColSelected) {
-								// Reset the position
-								reset();
-								return;
-						}
+					// Check if the piece was moved onto itself
+					if (oldRowSelected == newRowSelected
+						&& oldColSelected == newColSelected) {
+						// Reset the position
+						reset();
+						return;
+					}
 
-						// Check if valid move
-						if (!pieces[oldRowSelected][oldColSelected].isValid()) {
+					// Check if the piece belongs to the player depending on turn
+					if ((isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("white"))
+						|| (!isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("black"))) {
+
+						// Check if move is valid
+						if (pieces[oldRowSelected][oldColSelected].isValid()) {
+							// Else move the piece
+							pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+							pieces[oldRowSelected][oldColSelected] = null;
+
+							// Do the turn
+							isWhiteTurn = !isWhiteTurn;
+						} else {
 							reset();
 							return;
 						}
-
-						// Otherwise move the piece
-						pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
-						pieces[oldRowSelected][oldColSelected] = null;
+					} else {
+						reset();
+						return;
 					}
-
+				}
+				// Update the turn indicator label
+				if (isWhiteTurn) {
+					turnIndicator.setText("White's turn");
+				} else {
+					turnIndicator.setText("Black's turn");
+				}
 				// Reset row and column trackers
 				oldRowSelected = -1;
 				oldColSelected = -1;
 				newRowSelected = -1;
 				newColSelected = -1;
-		
+
 				// Repaint the board
 				repaint();
 			}
@@ -426,7 +557,12 @@ class ChessBoard extends JPanel {
  				}
 			}
 		});
-		
+		// Initialize the turn indicator label
+		turnIndicator = new JLabel("White's turn");
+		turnIndicator.setFont(new Font("Serif", Font.BOLD, 20));
+		turnIndicator.setForeground(Color.BLACK);
+		// Add the label to the ChessBoard panel
+		add(turnIndicator);
 	}
 
 	// Loads the pieces into the board array
