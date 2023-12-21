@@ -540,65 +540,67 @@ class ChessBoard extends JPanel {
 			// Override for releasing
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// Get coordinates of current mouse location
-				int mouseX = e.getX();
-				int mouseY = e.getY();
+				if (oldRowSelected != -1 && oldColSelected != -1) {
+					// Get coordinates of current mouse location
+					int mouseX = e.getX();
+					int mouseY = e.getY();
 
-				// Get the location where the piece is dropped
-				if ((mouseX >= 0 && mouseX <= sizeSquares * 8) &&
-					(mouseY >= 0 && mouseY <= sizeSquares * 8)) {
-					// Get the icon that was clicked
-					newRowSelected = mouseY / sizeSquares;
-					newColSelected = mouseX / sizeSquares;
-				}
-
-				// Check for valid mouse release
-				if (pieces[oldRowSelected][oldColSelected] != null 
-					&& oldRowSelected != -1 && oldColSelected != -1
-					&& newRowSelected != -1 && newColSelected != -1) {
-					// Check if the piece was moved onto itself
-					if (oldRowSelected == newRowSelected
-						&& oldColSelected == newColSelected) {
-						// Reset the position
-						reset();
-						return;
+					// Get the location where the piece is dropped
+					if ((mouseX >= 0 && mouseX <= sizeSquares * 8) &&
+						(mouseY >= 0 && mouseY <= sizeSquares * 8)) {
+						// Get the icon that was clicked
+						newRowSelected = mouseY / sizeSquares;
+						newColSelected = mouseX / sizeSquares;
 					}
 
-					// Check if the piece belongs to the player depending on turn
-					if ((isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("white"))
-						|| (!isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("black"))) {
+					// Check for valid mouse release
+					if (pieces[oldRowSelected][oldColSelected] != null 
+						&& oldRowSelected != -1 && oldColSelected != -1
+						&& newRowSelected != -1 && newColSelected != -1) {
+						// Check if the piece was moved onto itself
+						if (oldRowSelected == newRowSelected
+							&& oldColSelected == newColSelected) {
+							// Reset the position
+							reset();
+							return;
+						}
 
-						// Check if move is valid
-						if (pieces[oldRowSelected][oldColSelected].isValid()) {
-							// Else move the piece
-							pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
-							pieces[oldRowSelected][oldColSelected] = null;
+						// Check if the piece belongs to the player depending on turn
+						if ((isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("white"))
+							|| (!isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("black"))) {
 
-							// Do the turn
-							isWhiteTurn = !isWhiteTurn;
+							// Check if move is valid
+							if (pieces[oldRowSelected][oldColSelected].isValid()) {
+								// Else move the piece
+								pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+								pieces[oldRowSelected][oldColSelected] = null;
+
+								// Do the turn
+								isWhiteTurn = !isWhiteTurn;
+							} else {
+								reset();
+								return;
+							}
 						} else {
 							reset();
 							return;
 						}
-					} else {
-						reset();
-						return;
 					}
-				}
-				// Update the turn indicator label
-				if (isWhiteTurn) {
-					turnIndicator.setText("White's turn");
-				} else {
-					turnIndicator.setText("Black's turn");
-				}
-				// Reset row and column trackers
-				oldRowSelected = -1;
-				oldColSelected = -1;
-				newRowSelected = -1;
-				newColSelected = -1;
+					// Update the turn indicator label
+					if (isWhiteTurn) {
+						turnIndicator.setText("White's turn");
+					} else {
+						turnIndicator.setText("Black's turn");
+					}
+					// Reset row and column trackers
+					oldRowSelected = -1;
+					oldColSelected = -1;
+					newRowSelected = -1;
+					newColSelected = -1;
 
-				// Repaint the board
-				repaint();
+					// Repaint the board
+					repaint();
+				}
 			}
 		});
 
@@ -607,7 +609,8 @@ class ChessBoard extends JPanel {
 				public void mouseDragged(MouseEvent e) {
 					int mouseX = 0, mouseY = 0;
 					// Check for invalid index
-					if (oldRowSelected != -1 && oldColSelected != -1) {
+					if ((oldRowSelected != -1 && oldColSelected != -1)
+						&& (pieces[oldRowSelected][oldColSelected] != null)) {
 						// Get the mouse position
 						mouseX = e.getX();
 						mouseY = e.getY();
