@@ -13,6 +13,7 @@ public class Chess {
 
   		// Build the board
   		ChessBoard board = new ChessBoard();
+		board.setBackground(new Color(33, 33, 33));
 
   		// Add the board to the frame and make it visible
   		frame.add(board);
@@ -26,19 +27,6 @@ public class Chess {
   		frame.setVisible(true);
 
 	}
-}
-
-// For building pieces
-abstract class Piece {
-	// Information about the piece
-	
-	// Piece position, color, png (for display)
-	protected int positionX, positionY;
-	protected String color;
-	protected ImageIcon displayPiece;
-
-	// Checks for valid move for current piece
-	public abstract boolean isValid();
 }
 
 // Custom panel to draw on (Creates the board)
@@ -72,6 +60,38 @@ class ChessBoard extends JPanel {
 	private JLabel turnIndicator;
 
 	// Nested class inheritance hierarchy for making different pieces
+
+	// For building pieces
+	abstract class Piece {
+		// Information about the piece
+		
+		// Piece position, color, png (for display)
+		protected int positionX, positionY;
+		protected String color;
+		protected ImageIcon displayPiece;
+
+		// Checks for valid move for current piece
+		protected abstract boolean isValid();
+
+		protected boolean isOnDiagonal(int r, int c) {
+			// For looping between the squares
+			int loopRow = r, loopCol = c;
+
+			// For moving to different squares
+			int rowPos = newRowSelected, colPos = newColSelected;
+
+			// Check if squares on same diagnonal
+			for (int i = newColSelected; i != oldColSelected + loopCol; i += loopCol) {
+				if (rowPos == oldRowSelected && colPos == oldColSelected) 
+					return true;
+				// Increment variables
+				rowPos += loopRow;
+				colPos += loopCol;
+			}
+			return false;
+		}
+	}
+
 	// For white pieces
 	class whitePawn extends Piece {
 		// For tracking if the current pawn has been moved
@@ -87,7 +107,7 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
-		public boolean isValid() {
+		protected boolean isValid() {
 			// Check for diagonal capture
 			if (newRowSelected == oldRowSelected - 1
 				&& (newColSelected == oldColSelected + 1
@@ -135,7 +155,7 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
-		public boolean isValid() {
+		protected boolean isValid() {
 			return true;
 		}
 	}
@@ -150,13 +170,88 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
-		public boolean isValid() {
+		protected boolean isValid() {
+			// Check if the square is a black piece
+			if (pieces[newRowSelected][newColSelected] != null
+				&& pieces[newRowSelected][newColSelected].color == "black") {
+				if (isPathClear())
+					return true;
+			} else if (pieces[newRowSelected][newColSelected] == null) {
+				// Queen moving to an empty square
+				if (isPathClear())
+					return true;	
+			}
+			return false;
+		}
+		
+		private boolean isPathClear() {
+			// For looping between squares clicked
+			int loopTo = 0;
+
+			// Determine the direction of the loop
+			if (newColSelected < oldColSelected || newRowSelected < oldRowSelected)
+				loopTo = 1;
+			else	
+				loopTo = -1;
+
+			// Check if squares are in the same row or column
+			if (newRowSelected == oldRowSelected) {
+				// Check for a blocking piece
+				for (int i = newColSelected + loopTo; i != oldColSelected; i += loopTo) {
+					if (pieces[newRowSelected][i] != null)
+						return false;
+				}
+			} else if (newColSelected == oldColSelected) {
+				// Check for a blocking piece
+				for (int i = newRowSelected + loopTo; i != oldRowSelected; i += loopTo) {
+					if (pieces[i][newColSelected] != null)
+						return false;
+				}
+			} else {
+				// Variables to track direction of diagonals
+				int loopRow = 0, loopCol = 0;
+				
+				// Find the direction
+				if (newRowSelected < oldRowSelected) {
+					// Moving diagnoally down 
+					loopRow = 1;
+					if (newColSelected < oldColSelected) 
+						loopCol = 1;
+					else 
+						loopCol = -1;
+				} else {
+					// Moving diagnonally up
+					loopRow = -1;
+					if (newColSelected < oldColSelected)
+						loopCol = 1;
+					else
+						loopCol = -1;
+				}
+
+				// Check the diagonals
+
+				// Variables to loop through the diagnoal
+				int rowPos = newRowSelected + loopRow, colPos = newColSelected + loopCol;
+				
+				if (isOnDiagonal(loopRow, loopCol)) {
+					// Check if squares on same diagnonal
+					for (int i = newColSelected; i != oldColSelected; i += loopCol) {
+						if (pieces[rowPos][colPos] != null) 
+							return false;
+
+						// Increment variables
+						rowPos += loopRow;
+						colPos += loopCol;
+					}
+				} else 
+					return true;
+			}
+			// Otherwise
 			return true;
 		}
 	}
 
 	class whiteRook extends Piece {
-
 	    // Constructor
 	    public whiteRook() {
 	        positionX = 0;
@@ -167,7 +262,7 @@ class ChessBoard extends JPanel {
 
 	    // Override for valid moves
 	    @Override
-	    public boolean isValid() {
+	    protected boolean isValid() {
 	        // Rook moves horizontally or vertically
 	        if (newRowSelected == oldRowSelected || newColSelected == oldColSelected) {
 	            // Check if the path is clear
@@ -223,7 +318,7 @@ class ChessBoard extends JPanel {
 
 	    // Override for valid moves
 	    @Override
-	    public boolean isValid() {
+	    protected boolean isValid() {
 	        // Calculate the difference in position
 	        int rowDiff = Math.abs(newRowSelected - oldRowSelected);
 	        int colDiff = Math.abs(newColSelected - oldColSelected);
@@ -250,7 +345,7 @@ class ChessBoard extends JPanel {
 
 		// Override for valid moves
 		@Override
-		public boolean isValid() {
+		protected boolean isValid() {
 			int rowDiff = Math.abs(newRowSelected - oldRowSelected);
 			int colDiff = Math.abs(newColSelected - oldColSelected);
 
@@ -289,8 +384,6 @@ class ChessBoard extends JPanel {
 		}
 	}
 
-
-
 	// For black pieces
 
 	class blackPawn extends Piece {
@@ -307,7 +400,7 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
-		public boolean isValid() {
+		protected boolean isValid() {
 			// Check for diagonal capture
 			if (newRowSelected == oldRowSelected + 1
 				&& (newColSelected == oldColSelected + 1
@@ -355,7 +448,7 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
-		public boolean isValid() {
+		protected boolean isValid() {
 			return true;
 		}
 	}
@@ -370,7 +463,7 @@ class ChessBoard extends JPanel {
 		}
 
 		// Override for valid moves
-		public boolean isValid() {
+		protected boolean isValid() {
 			return true;
 		}
 	}
@@ -386,7 +479,7 @@ class ChessBoard extends JPanel {
 
 	    // Override for valid moves
 	    @Override
-	    public boolean isValid() {
+	    protected boolean isValid() {
 	        // Rook moves horizontally or vertically
 	        if (newRowSelected == oldRowSelected || newColSelected == oldColSelected) {
 	            // Check if the path is clear
@@ -442,7 +535,7 @@ class ChessBoard extends JPanel {
 
 	    // Override for valid moves
 	    @Override
-	    public boolean isValid() {
+	    protected boolean isValid() {
 	        // Difference in position
 	        int rowDiff = Math.abs(newRowSelected - oldRowSelected);
 	        int colDiff = Math.abs(newColSelected - oldColSelected);
@@ -470,7 +563,7 @@ class ChessBoard extends JPanel {
 
 		// Override for valid moves
 		@Override
-		public boolean isValid() {
+		protected boolean isValid() {
 			int rowDiff = Math.abs(newRowSelected - oldRowSelected);
 			int colDiff = Math.abs(newColSelected - oldColSelected);
 
