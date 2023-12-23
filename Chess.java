@@ -1,8 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class Chess {
 	// Execute application
@@ -17,6 +19,7 @@ public class Chess {
 
   		// Add the board to the frame and make it visible
   		frame.add(board);
+		
 		//frame.setSize(900, 900);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -59,8 +62,9 @@ class ChessBoard extends JPanel {
 	// Declare as a class member
 	private JLabel turnIndicator;
 
-	// Nested class inheritance hierarchy for making different pieces
+								private List<Point> currentLegalMoves = new ArrayList<>();
 
+	// Nested class inheritance hierarchy for making different pieces
 	// For building pieces
 	abstract class Piece {
 		// Information about the piece
@@ -143,6 +147,44 @@ class ChessBoard extends JPanel {
 					return false;
 			}
 		}
+		// Method to get legal moves
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			// Forward move by one square
+			if (isMoveLegal(x, y - 1)) {
+				moves.add(new Point(x, y - 1));
+			}
+
+			// First move: forward by two squares
+			if (!movedAlready && isMoveLegal(x, y - 2)) {
+				moves.add(new Point(x, y - 2));
+			}
+
+			// Capture moves
+			if (canCapture(x + 1, y - 1)) {
+				moves.add(new Point(x + 1, y - 1));
+			}
+			if (canCapture(x - 1, y - 1)) {
+				moves.add(new Point(x - 1, y - 1));
+			}
+
+			return moves;
+		}
+
+		private boolean isMoveLegal(int x, int y) {
+			// Check if the move is within board limits and not blocked
+			return x >= 0 && x < cols && y >= 0 && y < rows && pieces[y][x] == null;
+		}
+
+		private boolean canCapture(int x, int y) {
+			// Check if within board limits and if there's an enemy piece to capture
+			return x >= 0 && x < cols && y >= 0 && y < rows && pieces[y][x] != null 
+				&& pieces[y][x].color.equals("black");
+		}
+
 	}
 
 	class whiteKing extends Piece {
@@ -273,38 +315,56 @@ class ChessBoard extends JPanel {
 	        return false;
 	    }
 
-	    // Method to check if the path is clear
 		private boolean isPathClear(int oldRow, int oldCol, int newRow, int newCol) {
 			int rowStep = Integer.compare(newRow, oldRow);
 			int colStep = Integer.compare(newCol, oldCol);
 
+			// Start checking from the next cell in the direction of the movement
 			int currentRow = oldRow + rowStep;
 			int currentCol = oldCol + colStep;
 
-			// Check each square along the path for any piece
 			while (currentRow != newRow || currentCol != newCol) {
-				// If the current square has a piece
 				if (pieces[currentRow][currentCol] != null) {
-					// If it's the last square (destination) check if it's a different color
-					if (currentRow == newRow - rowStep && currentCol == newCol - colStep) {
-						return !pieces[currentRow][currentCol].color.equals("white");
-					}
-					// If it's not the destination square, the path is blocked
 					return false;
 				}
 				currentRow += rowStep;
 				currentCol += colStep;
 			}
 
-	        if (pieces[newRow][newCol] != null) {
-	            // Check if the destination square is not a piece of the same color
-	            if (pieces[newRow][newCol].color.equals("white")) {
-	                return false;
-	            }
-	        }
-	        // Path is clear
-	        return true;
-	    }
+			// Path is clear
+			return true;
+		}
+
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			// Add all vertical and horizontal moves
+			addMovesInDirection(moves, x, y, 0, -1);
+			addMovesInDirection(moves, x, y, 0, 1);
+			addMovesInDirection(moves, x, y, -1, 0);
+			addMovesInDirection(moves, x, y, 1, 0);
+
+			return moves;
+		}
+
+		private void addMovesInDirection(List<Point> moves, int x, int y, int dx, int dy) {
+			int newX = x + dx;
+			int newY = y + dy;
+			while (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
+				if (pieces[newY][newX] == null) {
+					moves.add(new Point(newX, newY));
+				} else {
+					if (!pieces[newY][newX].color.equals("white")) {
+						moves.add(new Point(newX, newY));
+					}
+					break;
+				}
+				newX += dx;
+				newY += dy;
+			}
+		}
 	}
 
 	class whiteKnight extends Piece {
@@ -333,6 +393,26 @@ class ChessBoard extends JPanel {
 	        }
 	        return false;
 	    }
+		// Method to get legal moves
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			// Potential moves of a knight
+			int[][] knightMoves = {
+				{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2},
+				{1, -2}, {1, 2}, {2, -1}, {2, 1}
+			};
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+			for (int[] move : knightMoves) {
+				int newX = x + move[0];
+				int newY = y + move[1];
+				if (newX >= 0 && newX < cols && newY >= 0 && newY < rows &&
+					(pieces[newY][newX] == null || !pieces[newY][newX].color.equals("black"))) {
+					moves.add(new Point(newX, newY));
+				}
+			}
+			return moves;
+		}
 	}
 
 	class whiteBishop extends Piece {
@@ -382,10 +462,41 @@ class ChessBoard extends JPanel {
 			}
 			return true;
 		}
+		// Method to get legal moves for the white bishop
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			// Check all four diagonal directions
+			addDiagonalMoves(moves, x, y, 1, 1);
+			addDiagonalMoves(moves, x, y, 1, -1);
+			addDiagonalMoves(moves, x, y, -1, 1);
+			addDiagonalMoves(moves, x, y, -1, -1);
+
+			return moves;
+		}
+
+		private void addDiagonalMoves(List<Point> moves, int x, int y, int dx, int dy) {
+			int newX = x + dx;
+			int newY = y + dy;
+			while (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
+				if (pieces[newY][newX] == null) {
+					moves.add(new Point(newX, newY));
+				} else {
+					if (pieces[newY][newX].color.equals("black")) {
+						moves.add(new Point(newX, newY));
+					}
+					break;
+				}
+				newX += dx;
+				newY += dy;
+			}
+		}
+
 	}
 
 	// For black pieces
-
 	class blackPawn extends Piece {
 		// For tracking if the current pawn has been moved
 		private boolean movedAlready;
@@ -435,6 +546,44 @@ class ChessBoard extends JPanel {
 				else 
 					return false;
 			}
+		}
+
+		// Method to get legal moves
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			// Forward move by one square
+			if (isMoveLegal(x, y + 1)) {
+				moves.add(new Point(x, y + 1));
+			}
+
+			// First move: forward by two squares
+			if (!movedAlready && isMoveLegal(x, y + 2)) {
+				moves.add(new Point(x, y + 2));
+			}
+
+			// Capture moves
+			if (canCapture(x + 1, y + 1)) {
+				moves.add(new Point(x + 1, y + 1));
+			}
+			if (canCapture(x - 1, y + 1)) {
+				moves.add(new Point(x - 1, y + 1));
+			}
+
+			return moves;
+		}
+
+		private boolean isMoveLegal(int x, int y) {
+			// Check if the move is within board limits and not blocked
+			return x >= 0 && x < cols && y >= 0 && y < rows && pieces[y][x] == null;
+		}
+
+		private boolean canCapture(int x, int y) {
+			// Check if within board limits and if there's an enemy piece to capture
+			return x >= 0 && x < cols && y >= 0 && y < rows && pieces[y][x] != null 
+				&& pieces[y][x].color.equals("white");
 		}
 	}
 
@@ -490,38 +639,55 @@ class ChessBoard extends JPanel {
 	        return false;
 	    }
 
-	    // Method to check if the path is clear
 		private boolean isPathClear(int oldRow, int oldCol, int newRow, int newCol) {
 			int rowStep = Integer.compare(newRow, oldRow);
 			int colStep = Integer.compare(newCol, oldCol);
 
+			// Start checking from the next cell in the direction of the movement
 			int currentRow = oldRow + rowStep;
 			int currentCol = oldCol + colStep;
 
-			// Check each square along the path for any piece
 			while (currentRow != newRow || currentCol != newCol) {
-				// If the current square has a piece
+				// If a piece is encountered, the path is not clear
 				if (pieces[currentRow][currentCol] != null) {
-					// If it's the last square (destination) check if it's a different color
-					if (currentRow == newRow - rowStep && currentCol == newCol - colStep) {
-						return !pieces[currentRow][currentCol].color.equals("black");
-					}
-					// If it's not the destination square, the path is blocked
 					return false;
 				}
 				currentRow += rowStep;
 				currentCol += colStep;
 			}
 
-	        if (pieces[newRow][newCol] != null) {
-	            // Check if the destination square is not a piece of the same color
-	            if (pieces[newRow][newCol].color.equals("black")) {
-	                return false;
-	            }
-	        }
-	        // Path is clear
-	        return true;
-	    }
+			return true;
+		}
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			// Add all vertical and horizontal moves
+			addMovesInDirection(moves, x, y, 0, -1);
+			addMovesInDirection(moves, x, y, 0, 1);
+			addMovesInDirection(moves, x, y, -1, 0);
+			addMovesInDirection(moves, x, y, 1, 0);
+
+			return moves;
+		}
+
+		private void addMovesInDirection(List<Point> moves, int x, int y, int dx, int dy) {
+			int newX = x + dx;
+			int newY = y + dy;
+			while (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
+				if (pieces[newY][newX] == null) {
+					moves.add(new Point(newX, newY));
+				} else {
+					if (!pieces[newY][newX].color.equals("white")) {
+						moves.add(new Point(newX, newY));
+					}
+					break;
+				}
+				newX += dx;
+				newY += dy;
+			}
+		}
 	}
 
 	class blackKnight extends Piece {
@@ -550,6 +716,29 @@ class ChessBoard extends JPanel {
 	        }
 	        return false;
 	    }
+		// Method to get legal moves
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			// Potential moves of a knight
+			int[][] knightMoves = {
+				{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2},
+				{1, -2}, {1, 2}, {2, -1}, {2, 1}
+			};
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			for (int[] move : knightMoves) {
+				int newX = x + move[0];
+				int newY = y + move[1];
+
+				if (newX >= 0 && newX < cols && newY >= 0 && newY < rows &&
+					(pieces[newY][newX] == null || !pieces[newY][newX].color.equals("white"))) {
+					moves.add(new Point(newX, newY));
+				}
+			}
+			return moves;
+		}
+
 	}
 
 	class blackBishop extends Piece {
@@ -600,6 +789,38 @@ class ChessBoard extends JPanel {
 			}
 			return true;
 		}
+		// Method to get legal moves for the white bishop
+		public List<Point> getLegalMoves() {
+			List<Point> moves = new ArrayList<>();
+			int x = positionX / sizeSquares;
+			int y = positionY / sizeSquares;
+
+			// Check all four diagonal directions
+			addDiagonalMoves(moves, x, y, 1, 1);
+			addDiagonalMoves(moves, x, y, 1, -1);
+			addDiagonalMoves(moves, x, y, -1, 1);
+			addDiagonalMoves(moves, x, y, -1, -1);
+
+			return moves;
+		}
+
+		private void addDiagonalMoves(List<Point> moves, int x, int y, int dx, int dy) {
+			int newX = x + dx;
+			int newY = y + dy;
+			while (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
+				if (pieces[newY][newX] == null) {
+					moves.add(new Point(newX, newY));
+				} else {
+					if (pieces[newY][newX].color.equals("black")) {
+						moves.add(new Point(newX, newY));
+					}
+					break;
+				}
+				newX += dx;
+				newY += dy;
+			}
+		}
+
 	}
 
 	// Constructor
@@ -628,6 +849,52 @@ class ChessBoard extends JPanel {
 					oldRowSelected = mouseY / sizeSquares;
 					oldColSelected = mouseX / sizeSquares;
 				}
+				    // Clear previous legal moves
+					currentLegalMoves.clear();
+
+				// Check if a piece is selected
+				if (oldRowSelected != -1 && oldColSelected != -1
+					&& pieces[oldRowSelected][oldColSelected] != null) {
+
+					// Check if it's white's turn and the piece is white
+					if (isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("white")) {
+						// Calculate legal moves for white pawns
+						if (pieces[oldRowSelected][oldColSelected] instanceof whitePawn) {
+							currentLegalMoves = ((whitePawn) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+						}
+						// Calculate legal moves for white rooks
+						if (pieces[oldRowSelected][oldColSelected] instanceof whiteRook) {
+							currentLegalMoves = ((whiteRook) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+						}
+					}
+					// Check if it's black's turn and the piece is black
+					else if (!isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("black")) {
+						// Calculate legal moves for black pawns
+						if (pieces[oldRowSelected][oldColSelected] instanceof blackPawn) {
+							currentLegalMoves = ((blackPawn) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+						}
+						// Calculate legal moves for black rooks
+						if (pieces[oldRowSelected][oldColSelected] instanceof blackRook) {
+							currentLegalMoves = ((blackRook) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+						}
+					}
+
+					// Calculate legal moves for knights
+					if (pieces[oldRowSelected][oldColSelected] instanceof whiteKnight) {
+						currentLegalMoves = ((whiteKnight) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+					} else if (pieces[oldRowSelected][oldColSelected] instanceof blackKnight) {
+						currentLegalMoves = ((blackKnight) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+					}
+
+					// Calculate legal moves for bishops
+					if (pieces[oldRowSelected][oldColSelected] instanceof whiteBishop) {
+						currentLegalMoves = ((whiteBishop) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+					} else if (pieces[oldRowSelected][oldColSelected] instanceof blackBishop) {
+						currentLegalMoves = ((blackBishop) pieces[oldRowSelected][oldColSelected]).getLegalMoves();
+					}
+				}
+
+				repaint();
 			}
 
 			// Override for releasing
@@ -691,6 +958,10 @@ class ChessBoard extends JPanel {
 					newRowSelected = -1;
 					newColSelected = -1;
 
+
+					// Clear legal moves after the piece has been moved
+    				currentLegalMoves.clear();
+
 					// Repaint the board
 					repaint();
 				}
@@ -727,7 +998,7 @@ class ChessBoard extends JPanel {
 		// Initialize the turn indicator label
 		turnIndicator = new JLabel("White's turn");
 		turnIndicator.setFont(new Font("Serif", Font.BOLD, 20));
-		turnIndicator.setForeground(Color.BLACK);
+		turnIndicator.setForeground(Color.WHITE);
 		// Add the label to the ChessBoard panel
 		add(turnIndicator);
 	}
@@ -873,6 +1144,28 @@ class ChessBoard extends JPanel {
 			// Move down a row
 			squareY += sizeSquares;
 			squareX = 0;
+		}
+
+		// Calculate the diameter of the circles
+		int circleDiameter = sizeSquares / 3;
+
+		// Draw circles on legal moves
+		for (Point move : currentLegalMoves) {
+			int moveX = move.x * sizeSquares;
+			int moveY = move.y * sizeSquares;
+
+			// Check if the square is either empty or contains an enemy piece
+			boolean isSquareEmptyOrEnemy = (pieces[move.y][move.x] == null) || 
+										(!pieces[move.y][move.x].color.equals(isWhiteTurn ? "white" : "black"));
+
+			if (isSquareEmptyOrEnemy) {
+				// Calculate the top-left corner of the circle to center it in the square
+				int circleX = moveX + sizeSquares / 2 - circleDiameter / 2;
+				int circleY = moveY + sizeSquares / 2 - circleDiameter / 2;
+
+				g2d.setColor(new Color(0, 0, 0, 128));
+				g2d.fillOval(circleX, circleY, circleDiameter, circleDiameter);
+			}
 		}
 
 		// Ensure the turn indicator label is always visible depending on resolution
