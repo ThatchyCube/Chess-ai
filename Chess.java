@@ -62,17 +62,24 @@ class ChessBoard extends JPanel {
 	// Declare as a class member
 	private JLabel turnIndicator;
 
-								private List<Point> currentLegalMoves = new ArrayList<>();
+	private List<Point> currentLegalMoves = new ArrayList<>();
 
 	// Nested class inheritance hierarchy for making different pieces
 	// For building pieces
 	abstract class Piece {
 		// Information about the piece
 		
-		// Piece position, color, png (for display)
+		// Piece position, color, png (for display) and type
 		protected int positionX, positionY;
 		protected String color;
 		protected ImageIcon displayPiece;
+		protected String pieceType = "";
+
+		// For tracking if the current piece has been moved 
+		protected boolean movedAlready = false;
+
+		// For king pieces
+		protected boolean canCastle = false;
 
 		// Checks for valid move for current piece
 		protected abstract boolean isValid();
@@ -82,11 +89,11 @@ class ChessBoard extends JPanel {
 			int loopRow = r, loopCol = c;
 
 			// For moving to different squares
-			int rowPos = newRowSelected, colPos = newColSelected;
+			int rowPos = oldRowSelected, colPos = oldColSelected;
 
 			// Check if squares on same diagnonal
-			for (int i = newColSelected; i != oldColSelected + loopCol; i += loopCol) {
-				if (rowPos == oldRowSelected && colPos == oldColSelected) 
+			for (int i = oldColSelected; i != newColSelected + loopCol; i += loopCol) {
+				if (rowPos == newRowSelected && colPos == newColSelected) 
 					return true;
 				// Increment variables
 				rowPos += loopRow;
@@ -98,15 +105,11 @@ class ChessBoard extends JPanel {
 
 	// For white pieces
 	class whitePawn extends Piece {
-		// For tracking if the current pawn has been moved
-		private boolean movedAlready;
-
 		// Constructor
 		public whitePawn() {
 			positionX = 0;
 			positionY = 0;
 			color = "white";
-			movedAlready = false;
 			displayPiece = new ImageIcon(getClass().getResource("img/wP.png"));
 		}
 
@@ -198,7 +201,65 @@ class ChessBoard extends JPanel {
 
 		// Override for valid moves
 		protected boolean isValid() {
-			return true;
+			// Check for ability to castle
+			if (newRowSelected == oldRowSelected 
+				&& (newColSelected == oldColSelected + 2 || newColSelected == oldColSelected + 3)) {
+
+				// Check for proper castling conditions to the right
+				if ((pieces[newRowSelected][oldColSelected + 1] == null && pieces[newRowSelected][oldColSelected + 2] == null)
+					&& pieces[newRowSelected][oldColSelected + 3].pieceType == "whiteRook") {
+					// Check the king hasn't moved before
+					if (movedAlready == false) {
+						canCastle = true;
+						movedAlready = true;
+						return true;
+					}
+				}
+			} else if (newRowSelected == oldRowSelected
+				&& (newColSelected == oldColSelected - 2 || newColSelected == oldColSelected - 3
+					|| newColSelected == oldColSelected - 4)) {
+					
+				// Check for proper castling conditions to the left
+				if ((pieces[newRowSelected][oldColSelected - 1] == null && pieces[newRowSelected][oldColSelected - 2] == null 
+					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType == "whiteRook") {
+					// Check the king hasn't moved before
+					if (movedAlready == false) {
+						canCastle = true;
+						movedAlready = true;
+						return true;
+					}
+				}	
+			}
+
+			// For tracking distance between squares
+			int distanceRow = 0, distanceCol = 0;
+
+			// Get positive distances between the squares
+			if (newRowSelected > oldRowSelected)
+				distanceRow = newRowSelected - oldRowSelected;
+			else 
+				distanceRow = oldRowSelected - newRowSelected;
+			if (newColSelected > oldColSelected)
+				distanceCol = newColSelected - oldColSelected;
+			else 
+				distanceCol = oldColSelected - newColSelected;
+
+			// Check if the squares are one more away
+			if (distanceRow > 1 || distanceCol > 1)
+				return false;
+
+			// Check for valid move
+			if (pieces[newRowSelected][newColSelected] != null 
+				&& pieces[newRowSelected][newColSelected].color == "black") {
+				movedAlready = true;
+				return true;
+			} else if (pieces[newRowSelected][newColSelected] == null) {
+				movedAlready = true;
+				return true;
+			}
+			
+			// Otherwise
+			return false;
 		}
 	}
 
@@ -250,43 +311,36 @@ class ChessBoard extends JPanel {
 						return false;
 				}
 			} else {
-				// Variables to track direction of diagonals
+				// Check for diagonal moves
+
+				// For tracking direction of the diagonal
 				int loopRow = 0, loopCol = 0;
-				
-				// Find the direction
-				if (newRowSelected < oldRowSelected) {
-					// Moving diagnoally down 
+
+				// Get the direction of the diagonal
+				if (oldRowSelected < newRowSelected)  
 					loopRow = 1;
-					if (newColSelected < oldColSelected) 
-						loopCol = 1;
-					else 
-						loopCol = -1;
-				} else {
-					// Moving diagnonally up
+				else
 					loopRow = -1;
-					if (newColSelected < oldColSelected)
-						loopCol = 1;
-					else
-						loopCol = -1;
-				}
+				if (oldColSelected < newColSelected)
+					loopCol = 1;
+				else 
+					loopCol = -1;
 
-				// Check the diagonals
+				// Variables to loop through the board
+				int rowPos = oldRowSelected + loopRow, colPos = oldColSelected + loopCol;
 
-				// Variables to loop through the diagnoal
-				int rowPos = newRowSelected + loopRow, colPos = newColSelected + loopCol;
-				
+				// Check if the new and old square are on same diagonal
 				if (isOnDiagonal(loopRow, loopCol)) {
-					// Check if squares on same diagnonal
-					for (int i = newColSelected; i != oldColSelected; i += loopCol) {
+					// Search for blocking pieces
+					for (int i = colPos; i != newColSelected; i += loopCol) {
 						if (pieces[rowPos][colPos] != null) 
 							return false;
 
-						// Increment variables
-						rowPos += loopRow;
+						// Increment tracking variables
+						rowPos += loopCol;
 						colPos += loopCol;
-					}
-				} else 
-					return true;
+					} 
+				}
 			}
 			// Otherwise
 			return true;
@@ -300,6 +354,7 @@ class ChessBoard extends JPanel {
 	        positionY = 0;
 	        color = "white";
 	        displayPiece = new ImageIcon(getClass().getResource("img/wR.png"));
+			pieceType = "whiteRook";
 	    }
 
 	    // Override for valid moves
@@ -498,15 +553,11 @@ class ChessBoard extends JPanel {
 
 	// For black pieces
 	class blackPawn extends Piece {
-		// For tracking if the current pawn has been moved
-		private boolean movedAlready;
-
 		// Constructor
 		public blackPawn() {
 			positionX = 0;
 			positionY = 0;
 			color = "black";
-			movedAlready = false;
 			displayPiece = new ImageIcon(getClass().getResource("img/bP.png"));
 		}
 
@@ -598,7 +649,65 @@ class ChessBoard extends JPanel {
 
 		// Override for valid moves
 		protected boolean isValid() {
-			return true;
+			// Check for ability to castle
+			if (newRowSelected == oldRowSelected 
+				&& (newColSelected == oldColSelected + 2 || newColSelected == oldColSelected + 3)) {
+
+				// Check for proper castling conditions to the right
+				if ((pieces[newRowSelected][oldColSelected + 1] == null && pieces[newRowSelected][oldColSelected + 2] == null)
+					&& pieces[newRowSelected][oldColSelected + 3].pieceType == "blackRook") {
+					// Check the king hasn't moved before
+					if (movedAlready == false) {
+						canCastle = true;
+						movedAlready = true;
+						return true;
+					}
+				}
+			} else if (newRowSelected == oldRowSelected
+				&& (newColSelected == oldColSelected - 2 || newColSelected == oldColSelected - 3
+					|| newColSelected == oldColSelected - 4)) {
+					
+				// Check for proper castling conditions to the left
+				if ((pieces[newRowSelected][oldColSelected - 1] == null && pieces[newRowSelected][oldColSelected - 2] == null 
+					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType == "blackRook") {
+					// Check the king hasn't moved before
+					if (movedAlready == false) {
+						canCastle = true;
+						movedAlready = true;
+						return true;
+					}
+				}	
+			}
+
+			// For tracking distance between squares
+			int distanceRow = 0, distanceCol = 0;
+
+			// Get positive distances between the squares
+			if (newRowSelected > oldRowSelected)
+				distanceRow = newRowSelected - oldRowSelected;
+			else 
+				distanceRow = oldRowSelected - newRowSelected;
+			if (newColSelected > oldColSelected)
+				distanceCol = newColSelected - oldColSelected;
+			else 
+				distanceCol = oldColSelected - newColSelected;
+
+			// Check if the squares are one more away
+			if (distanceRow > 1 || distanceCol > 1)
+				return false;
+
+			// Check for valid move
+			if (pieces[newRowSelected][newColSelected] != null 
+				&& pieces[newRowSelected][newColSelected].color == "white") {
+				movedAlready = true;
+				return true;
+			} else if (pieces[newRowSelected][newColSelected] == null) {
+				movedAlready = true;
+				return true;
+			}
+			
+			// Otherwise
+			return false;
 		}
 	}
 
@@ -613,6 +722,75 @@ class ChessBoard extends JPanel {
 
 		// Override for valid moves
 		protected boolean isValid() {
+			// Check if the square is a black piece
+			if (pieces[newRowSelected][newColSelected] != null
+				&& pieces[newRowSelected][newColSelected].color == "white") {
+				if (isPathClear())
+					return true;
+			} else if (pieces[newRowSelected][newColSelected] == null) {
+				// Queen moving to an empty square
+				if (isPathClear())
+					return true;	
+			}
+			return false;
+		}
+		
+		private boolean isPathClear() {
+			// For looping between squares clicked
+			int loopTo = 0;
+
+			// Determine the direction of the loop
+			if (newColSelected < oldColSelected || newRowSelected < oldRowSelected)
+				loopTo = 1;
+			else	
+				loopTo = -1;
+
+			// Check if squares are in the same row or column
+			if (newRowSelected == oldRowSelected) {
+				// Check for a blocking piece
+				for (int i = newColSelected + loopTo; i != oldColSelected; i += loopTo) {
+					if (pieces[newRowSelected][i] != null)
+						return false;
+				}
+			} else if (newColSelected == oldColSelected) {
+				// Check for a blocking piece
+				for (int i = newRowSelected + loopTo; i != oldRowSelected; i += loopTo) {
+					if (pieces[i][newColSelected] != null)
+						return false;
+				}
+			} else {
+				// Check for diagonal moves
+
+				// For tracking direction of the diagonal
+				int loopRow = 0, loopCol = 0;
+
+				// Get the direction of the diagonal
+				if (oldRowSelected < newRowSelected)  
+					loopRow = 1;
+				else
+					loopRow = -1;
+				if (oldColSelected < newColSelected)
+					loopCol = 1;
+				else 
+					loopCol = -1;
+
+				// Variables to loop through the board
+				int rowPos = oldRowSelected + loopRow, colPos = oldColSelected + loopCol;
+
+				// Check if the new and old square are on same diagonal
+				if (isOnDiagonal(loopRow, loopCol)) {
+					// Search for blocking pieces
+					for (int i = colPos; i != newColSelected; i += loopCol) {
+						if (pieces[rowPos][colPos] != null) 
+							return false;
+
+						// Increment tracking variables
+						rowPos += loopCol;
+						colPos += loopCol;
+					} 
+				}
+			}
+			// Otherwise
 			return true;
 		}
 	}
@@ -624,6 +802,7 @@ class ChessBoard extends JPanel {
 	        positionY = 0;
 	        color = "black";
 	        displayPiece = new ImageIcon(getClass().getResource("img/bR.png"));
+			pieceType = "blackRook";
 	    }
 
 	    // Override for valid moves
@@ -931,9 +1110,23 @@ class ChessBoard extends JPanel {
 
 							// Check if move is valid
 							if (pieces[oldRowSelected][oldColSelected].isValid()) {
-								// Else move the piece
-								pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
-								pieces[oldRowSelected][oldColSelected] = null;
+								// Check for attempt to castle
+								if (pieces[oldRowSelected][oldColSelected].canCastle) {
+									// Check which king is castling	
+									if (newColSelected > oldColSelected) {
+										// Right castle
+										pieces[oldRowSelected][oldColSelected].canCastle = false;
+										castleRight();
+									} else {
+										// Left castle
+										pieces[oldRowSelected][oldColSelected].canCastle = false;
+										castleLeft();
+									}
+								} else {
+									// Else move the piece
+									pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+									pieces[oldRowSelected][oldColSelected] = null;
+								}
 
 								// Do the turn
 								isWhiteTurn = !isWhiteTurn;
@@ -1050,25 +1243,26 @@ class ChessBoard extends JPanel {
         return resizedIcon;
     }
 
-	// For swapping two piece positions
-	private void swapPieces(int nrs, int ncs, int ors, int ocs) {
-		// Save the original piece information
-		int tempPositionX = pieces[nrs][ncs].positionX;
-		int tempPositionY = pieces[nrs][ncs].positionY;
-		String tempColor = pieces[nrs][ncs].color;
-		ImageIcon tempDisplay = pieces[nrs][ncs].displayPiece;
+	// For castling kings to the right
+	private void castleRight() {
+		// Move the king and the rook
+		pieces[oldRowSelected][oldColSelected + 2] = pieces[oldRowSelected][oldColSelected];
+		pieces[oldRowSelected][oldColSelected + 1] = pieces[oldRowSelected][oldColSelected + 3];
 
-		// Swap the original piece with the new position
-		pieces[nrs][ncs].positionX = pieces[ors][ocs].positionX;
-		pieces[nrs][ncs].positionY = pieces[ors][ocs].positionY;
-		pieces[nrs][ncs].color = pieces[ors][ocs].color;
-		pieces[nrs][ncs].displayPiece = pieces[ors][ocs].displayPiece;
+		// Leave the original squares empty
+		pieces[oldRowSelected][oldColSelected] = null;
+		pieces[oldRowSelected][oldColSelected + 3] = null;
+	}
 
-		// Put the new location's piece in the old spot
-		pieces[nrs][ncs].positionX = tempPositionX;
-		pieces[nrs][ncs].positionY = tempPositionY;
-		pieces[nrs][ncs].color = tempColor;
-		pieces[nrs][ncs].displayPiece = tempDisplay;
+	// For castling kings to the left
+	private void castleLeft() {
+		// Move the king and the rook
+		pieces[oldRowSelected][oldColSelected - 2] = pieces[oldRowSelected][oldColSelected];
+		pieces[oldRowSelected][oldColSelected - 1] = pieces[oldRowSelected][oldColSelected - 4];
+
+		// Leave the original squares empty
+		pieces[oldRowSelected][oldColSelected] = null;
+		pieces[oldRowSelected][oldColSelected - 4] = null;
 	}
 
 	// For resetting a pieces position
