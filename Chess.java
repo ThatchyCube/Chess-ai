@@ -296,10 +296,6 @@ class ChessBoard extends JPanel {
 				loopTo = 1;
 			else	
 				loopTo = -1;
-
-			// Check if squares are in the same row or column
-			if (newRowSelected != oldRowSelected && newColSelected != oldColSelected)
-				return false;
 				
 			if (newRowSelected == oldRowSelected) {
 				// Check for a blocking piece
@@ -343,8 +339,14 @@ class ChessBoard extends JPanel {
 						rowPos += loopCol;
 						colPos += loopCol;
 					} 
+					return true;
 				}
 			}
+
+			// Check if squares are in the same row or column
+			if (newRowSelected != oldRowSelected && newColSelected != oldColSelected)
+				return false;
+
 			// Otherwise
 			return true;
 		}
@@ -791,8 +793,14 @@ class ChessBoard extends JPanel {
 						rowPos += loopCol;
 						colPos += loopCol;
 					} 
+					return true;
 				}
 			}
+
+			// Check if squares are in the same row or column
+			if (newRowSelected != oldRowSelected && newColSelected != oldColSelected)
+				return false;
+
 			// Otherwise
 			return true;
 		}
