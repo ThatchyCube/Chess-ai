@@ -336,7 +336,7 @@ class ChessBoard extends JPanel {
 							return false;
 
 						// Increment tracking variables
-						rowPos += loopCol;
+						rowPos += loopRow;
 						colPos += loopCol;
 					} 
 					return true;
@@ -790,7 +790,7 @@ class ChessBoard extends JPanel {
 							return false;
 
 						// Increment tracking variables
-						rowPos += loopCol;
+						rowPos += loopRow;
 						colPos += loopCol;
 					} 
 					return true;
