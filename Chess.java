@@ -131,7 +131,7 @@ class ChessBoard extends JPanel {
 				&& (newColSelected == oldColSelected + 1
 				|| newColSelected == oldColSelected - 1)) {
 					if (pieces[newRowSelected][newColSelected] != null 
-						&& pieces[newRowSelected][newColSelected].color == "black") {
+						&& pieces[newRowSelected][newColSelected].color.equals("black")) {
 						// Black piece can be diagnally captured
 						movedAlready = true;
 						return true;
@@ -177,10 +177,10 @@ class ChessBoard extends JPanel {
 				
 					// Check if moved next to a pawn for en passant
 					if (pieces[newRowSelected][newColSelected - 1] != null
-						&& pieces[newRowSelected][newColSelected - 1].pieceType == "blackPawn") {
+						&& pieces[newRowSelected][newColSelected - 1].pieceType.equals("blackPawn")) {
 						pieces[newRowSelected][newColSelected - 1].enPassantRight = true;
 					} else if (pieces[newRowSelected][newColSelected + 1] != null
-						&& pieces[newRowSelected][newColSelected + 1].pieceType == "blackPawn") {
+						&& pieces[newRowSelected][newColSelected + 1].pieceType.equals("blackPawn")) {
 						pieces[newRowSelected][newColSelected + 1].enPassantLeft = true;
 					}
 
@@ -250,6 +250,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "white";
 			displayPiece = new ImageIcon(getClass().getResource("img/wK.png"));
+			pieceType = "whiteKing";
 		}
 
 		// Override for valid moves
@@ -260,7 +261,7 @@ class ChessBoard extends JPanel {
 
 				// Check for proper castling conditions to the right
 				if ((pieces[newRowSelected][oldColSelected + 1] == null && pieces[newRowSelected][oldColSelected + 2] == null)
-					&& pieces[newRowSelected][oldColSelected + 3].pieceType == "whiteRook") {
+					&& pieces[newRowSelected][oldColSelected + 3].pieceType.equals("whiteRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
 						canCastle = true;
@@ -274,7 +275,7 @@ class ChessBoard extends JPanel {
 					
 				// Check for proper castling conditions to the left
 				if ((pieces[newRowSelected][oldColSelected - 1] == null && pieces[newRowSelected][oldColSelected - 2] == null 
-					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType == "whiteRook") {
+					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType.equals("whiteRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
 						canCastle = true;
@@ -303,7 +304,7 @@ class ChessBoard extends JPanel {
 
 			// Check for valid move
 			if (pieces[newRowSelected][newColSelected] != null 
-				&& pieces[newRowSelected][newColSelected].color == "black") {
+				&& pieces[newRowSelected][newColSelected].color.equals("black")) {
 				movedAlready = true;
 				return true;
 			} else if (pieces[newRowSelected][newColSelected] == null) {
@@ -329,7 +330,7 @@ class ChessBoard extends JPanel {
 		protected boolean isValid() {
 			// Check if the square is a black piece
 			if (pieces[newRowSelected][newColSelected] != null
-				&& pieces[newRowSelected][newColSelected].color == "black") {
+				&& pieces[newRowSelected][newColSelected].color.equals("black")) {
 				if (isPathClear())
 					return true;
 			} else if (pieces[newRowSelected][newColSelected] == null) {
@@ -627,7 +628,7 @@ class ChessBoard extends JPanel {
 				&& (newColSelected == oldColSelected + 1
 				|| newColSelected == oldColSelected - 1)) {
 					if (pieces[newRowSelected][newColSelected] != null 
-						&& pieces[newRowSelected][newColSelected].color == "white") {
+						&& pieces[newRowSelected][newColSelected].color.equals("white")) {
 						// Black piece can be diagnally captured
 						movedAlready = true;
 						return true;
@@ -673,10 +674,10 @@ class ChessBoard extends JPanel {
 
 					// Check if moved next to a pawn for en passant
 					if (pieces[newRowSelected][newColSelected - 1] != null
-						&& pieces[newRowSelected][newColSelected - 1].pieceType == "whitePawn") {
+						&& pieces[newRowSelected][newColSelected - 1].pieceType.equals("whitePawn")) {
 						pieces[newRowSelected][newColSelected - 1].enPassantRight = true;
 					} else if (pieces[newRowSelected][newColSelected + 1] != null
-						&& pieces[newRowSelected][newColSelected + 1].pieceType == "whitePawn") {
+						&& pieces[newRowSelected][newColSelected + 1].pieceType.equals("whitePawn")) {
 						pieces[newRowSelected][newColSelected + 1].enPassantLeft = true;
 					}
 						 
@@ -745,6 +746,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "black";
 			displayPiece = new ImageIcon(getClass().getResource("img/bK.png"));
+			pieceType = "blackKing";
 		}
 
 		// Override for valid moves
@@ -755,7 +757,7 @@ class ChessBoard extends JPanel {
 
 				// Check for proper castling conditions to the right
 				if ((pieces[newRowSelected][oldColSelected + 1] == null && pieces[newRowSelected][oldColSelected + 2] == null)
-					&& pieces[newRowSelected][oldColSelected + 3].pieceType == "blackRook") {
+					&& pieces[newRowSelected][oldColSelected + 3].pieceType.equals("blackRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
 						canCastle = true;
@@ -769,7 +771,7 @@ class ChessBoard extends JPanel {
 					
 				// Check for proper castling conditions to the left
 				if ((pieces[newRowSelected][oldColSelected - 1] == null && pieces[newRowSelected][oldColSelected - 2] == null 
-					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType == "blackRook") {
+					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType.equals("blackRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
 						canCastle = true;
@@ -798,7 +800,7 @@ class ChessBoard extends JPanel {
 
 			// Check for valid move
 			if (pieces[newRowSelected][newColSelected] != null 
-				&& pieces[newRowSelected][newColSelected].color == "white") {
+				&& pieces[newRowSelected][newColSelected].color.equals("white")) {
 				movedAlready = true;
 				return true;
 			} else if (pieces[newRowSelected][newColSelected] == null) {
@@ -818,13 +820,14 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "black";
 			displayPiece = new ImageIcon(getClass().getResource("img/bQ.png"));
+			pieceType = "blackQueen";
 		}
 
 		// Override for valid moves
 		protected boolean isValid() {
 			// Check if the square is a black piece
 			if (pieces[newRowSelected][newColSelected] != null
-				&& pieces[newRowSelected][newColSelected].color == "white") {
+				&& pieces[newRowSelected][newColSelected].color.equals("white")) {
 				if (isPathClear())
 					return true;
 			} else if (pieces[newRowSelected][newColSelected] == null) {
@@ -1214,8 +1217,12 @@ class ChessBoard extends JPanel {
 						if ((isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("white"))
 							|| (!isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("black"))) {
 
-							// Check if move is valid
-							if (pieces[oldRowSelected][oldColSelected].isValid()) {
+							// Check if the king is in check
+							if (!isInCheck()) {
+								; // Do nothing
+							} else if (pieces[oldRowSelected][oldColSelected].isValid()) {
+								// Check if move is valid
+
 								// Check for en passant
 								if (enPassant) {
 									enPassant = false;
@@ -1391,6 +1398,30 @@ class ChessBoard extends JPanel {
 		pieces[oldRowSelected][oldColSelected].positionX = oldColSelected * sizeSquares;
 		pieces[oldRowSelected][oldColSelected].positionY = oldRowSelected * sizeSquares;
 		repaint();
+	}
+
+	// For checking if either king is in check
+	private boolean isInCheck() {
+		// Check the king for the current player
+		if (isWhiteTurn) {
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < cols; j++) {
+					if (pieces[i][j] != null && pieces[i][j].pieceType.equals("whiteKing")) {
+						// Check lateral movements
+						for (int k = i - 1; k >= 0; k--) {
+							if (pieces[k][j] != null) {
+								if (pieces[k][j].pieceType.equals("blackRook")
+									|| pieces[k][j].pieceType.equals("blackQueen")) {
+									return false;
+								} else
+									break;
+							}
+						}
+					}
+				}
+			}
+		} 
+		return true;
 	}
 
 	// Override for drawing
