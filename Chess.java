@@ -28,7 +28,6 @@ public class Chess {
 
 		// Make the frame visible
   		frame.setVisible(true);
-
 	}
 }
 
@@ -62,7 +61,12 @@ class ChessBoard extends JPanel {
 	// Declare as a class member
 	private JLabel turnIndicator;
 
+	// For drawing available piece paths
 	private List<Point> currentLegalMoves = new ArrayList<>();
+
+	// For en passant
+	private boolean enPassant = false;
+	private boolean enPassantReset = false;
 
 	// Nested class inheritance hierarchy for making different pieces
 	// For building pieces
@@ -82,7 +86,10 @@ class ChessBoard extends JPanel {
 		protected boolean canCastle = false;
 
 		// For pawn pieces
-		protected boolean enPassant = false;
+		protected boolean enPassantLeft = false;
+		protected boolean enPassantRight = false;
+		int enPassantTracker = 0;
+
 
 		// Checks for valid move for current piece
 		protected abstract boolean isValid();
@@ -135,11 +142,48 @@ class ChessBoard extends JPanel {
 			if (pieces[newRowSelected][newColSelected] != null)
 				return false;
 
+			// Check if can take en passant
+			if (enPassantLeft && newRowSelected == oldRowSelected - 1 
+				&& newColSelected == oldColSelected - 1) {
+				// Do the move
+				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+				pieces[oldRowSelected][oldColSelected] = null;
+				pieces[oldRowSelected][newColSelected] = null;
+
+				// Set the flag
+				enPassant = true;
+				enPassantLeft = false;
+				movedAlready = true;
+				return true;
+			} else if (enPassantRight && newRowSelected == oldRowSelected - 1
+				&& newColSelected == oldColSelected + 1) {
+				// Do the move
+				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+				pieces[oldRowSelected][oldColSelected] = null;
+				pieces[oldColSelected][newColSelected] = null;
+
+				// Set the flag
+				enPassant = true;
+				enPassantRight = false;
+				movedAlready = true;
+				return true;
+			}
+
 			// Check if the pawn has been moved
 			if (!movedAlready) {
 				// Pawn has option to move two squares
 				if (newColSelected == oldColSelected
 					&& newRowSelected == oldRowSelected - 2) {
+				
+					// Check if moved next to a pawn for en passant
+					if (pieces[newRowSelected][newColSelected - 1] != null
+						&& pieces[newRowSelected][newColSelected - 1].pieceType == "blackPawn") {
+						pieces[newRowSelected][newColSelected - 1].enPassantRight = true;
+					} else if (pieces[newRowSelected][newColSelected + 1] != null
+						&& pieces[newRowSelected][newColSelected + 1].pieceType == "blackPawn") {
+						pieces[newRowSelected][newColSelected + 1].enPassantLeft = true;
+					}
+
 					// Correct move made
 					movedAlready = true;
 					return true;
@@ -594,11 +638,48 @@ class ChessBoard extends JPanel {
 			if (pieces[newRowSelected][newColSelected] != null)
 				return false;
 
+			// Check if can take en passant
+			if (enPassantLeft && newRowSelected == oldRowSelected + 1 
+				&& newColSelected == oldColSelected - 1) {
+				// Do the move
+				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+				pieces[oldRowSelected][oldColSelected] = null;
+				pieces[newRowSelected - 1][newColSelected] = null;
+
+				// Set the flag
+				enPassant = true;
+				enPassantLeft = false;
+				movedAlready = true;
+				return true;
+			} else if (enPassantRight && newRowSelected == oldRowSelected + 1
+				&& newColSelected == oldColSelected + 1) {
+				// Do the move
+				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
+				pieces[oldRowSelected][oldColSelected] = null;
+				pieces[newRowSelected - 1][newColSelected] = null;
+
+				// Set the flag
+				enPassant = true;
+				enPassantRight = false;
+				movedAlready = true;
+				return true;
+			}
+
 			// Check if the pawn has been moved
 			if (!movedAlready) {
 				// Pawn has option to move two squares
 				if (newColSelected == oldColSelected
 					&& newRowSelected == oldRowSelected + 2) {
+
+					// Check if moved next to a pawn for en passant
+					if (pieces[newRowSelected][newColSelected - 1] != null
+						&& pieces[newRowSelected][newColSelected - 1].pieceType == "whitePawn") {
+						pieces[newRowSelected][newColSelected - 1].enPassantRight = true;
+					} else if (pieces[newRowSelected][newColSelected + 1] != null
+						&& pieces[newRowSelected][newColSelected + 1].pieceType == "whitePawn") {
+						pieces[newRowSelected][newColSelected + 1].enPassantLeft = true;
+					}
+						 
 					// Correct move made
 					movedAlready = true;
 					return true;
@@ -1135,7 +1216,10 @@ class ChessBoard extends JPanel {
 
 							// Check if move is valid
 							if (pieces[oldRowSelected][oldColSelected].isValid()) {
-								if (pieces[oldRowSelected][oldColSelected].canCastle) {
+								// Check for en passant
+								if (enPassant) {
+									enPassant = false;
+								} else if (pieces[oldRowSelected][oldColSelected].canCastle) {
 									// Check for attempt to castle
 									if (newColSelected > oldColSelected) {
 										// Right castle
@@ -1163,6 +1247,18 @@ class ChessBoard extends JPanel {
 							return;
 						}
 					}
+
+					// Reset the en passant trackers
+					if (enPassantReset) {
+						enPassant = false;
+						enPassantReset = false;
+					}
+
+					// Check if en passant was not done
+					if (enPassantReset == false && enPassant == true) {
+						enPassantReset = true;
+					}
+
 					// Update the turn indicator label
 					if (isWhiteTurn) {
 						turnIndicator.setText("White's turn");
