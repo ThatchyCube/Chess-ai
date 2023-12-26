@@ -81,6 +81,9 @@ class ChessBoard extends JPanel {
 		// For king pieces
 		protected boolean canCastle = false;
 
+		// For pawn pieces
+		protected boolean enPassant = false;
+
 		// Checks for valid move for current piece
 		protected abstract boolean isValid();
 
@@ -111,6 +114,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "white";
 			displayPiece = new ImageIcon(getClass().getResource("img/wP.png"));
+			pieceType = "whitePawn";
 		}
 
 		// Override for valid moves
@@ -135,21 +139,26 @@ class ChessBoard extends JPanel {
 			if (!movedAlready) {
 				// Pawn has option to move two squares
 				if (newColSelected == oldColSelected
-					&& (newRowSelected == oldRowSelected - 2
-					|| newRowSelected == oldRowSelected - 1)) {
+					&& newRowSelected == oldRowSelected - 2) {
 					// Correct move made
+					movedAlready = true;
+					return true;
+				} else if (newColSelected == oldColSelected
+					&& newRowSelected == oldRowSelected - 1) {
+					// Pawn can move one square
 					movedAlready = true;
 					return true;
 				} else 
 					return false;
-			} else {
-				if (newColSelected == oldColSelected
-					&& newRowSelected == oldRowSelected - 1)
-					return true;
-				else 
-					return false;
-			}
+			} else if (newColSelected == oldColSelected
+				&& newRowSelected == oldRowSelected - 1) {
+				// Pawn can move one square
+				movedAlready = true;
+				return true;
+			} else
+				return false;
 		}
+
 		// Method to get legal moves
 		public List<Point> getLegalMoves() {
 			List<Point> moves = new ArrayList<>();
@@ -564,6 +573,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "black";
 			displayPiece = new ImageIcon(getClass().getResource("img/bP.png"));
+			pieceType = "blackPawn";
 		}
 
 		// Override for valid moves
@@ -588,20 +598,24 @@ class ChessBoard extends JPanel {
 			if (!movedAlready) {
 				// Pawn has option to move two squares
 				if (newColSelected == oldColSelected
-					&& (newRowSelected == oldRowSelected + 2
-					|| newRowSelected == oldRowSelected + 1)) {
+					&& newRowSelected == oldRowSelected + 2) {
 					// Correct move made
+					movedAlready = true;
+					return true;
+				} else if (newColSelected == oldColSelected
+					&& newRowSelected == oldRowSelected + 1) {
+					// Pawn can move one square
 					movedAlready = true;
 					return true;
 				} else 
 					return false;
-			} else {
-				if (newColSelected == oldColSelected
-					&& newRowSelected == oldRowSelected + 1)
-					return true;
-				else 
-					return false;
-			}
+			} else if (newColSelected == oldColSelected
+				&& newRowSelected == oldRowSelected + 1) {
+				// Pawn can move one square
+				movedAlready = true;
+				return true;
+			} else 
+				return false;
 		}
 
 		// Method to get legal moves
@@ -1121,9 +1135,8 @@ class ChessBoard extends JPanel {
 
 							// Check if move is valid
 							if (pieces[oldRowSelected][oldColSelected].isValid()) {
-								// Check for attempt to castle
 								if (pieces[oldRowSelected][oldColSelected].canCastle) {
-									// Check which king is castling	
+									// Check for attempt to castle
 									if (newColSelected > oldColSelected) {
 										// Right castle
 										pieces[oldRowSelected][oldColSelected].canCastle = false;
