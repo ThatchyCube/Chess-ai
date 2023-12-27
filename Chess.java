@@ -324,6 +324,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "white";
 			displayPiece = new ImageIcon(getClass().getResource("img/wQ.png"));
+			pieceType = "whiteQueen";
 		}
 
 		// Override for valid moves
@@ -488,6 +489,7 @@ class ChessBoard extends JPanel {
 	        positionY = 0;
 	        color = "white";
 	        displayPiece = new ImageIcon(getClass().getResource("img/wN.png"));
+			pieceType = "whiteKnight";
 	    }
 
 	    // Override for valid moves
@@ -535,6 +537,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "white";
 			displayPiece = new ImageIcon(getClass().getResource("img/wB.png"));
+			pieceType = "whiteBishop";
 		}
 
 		// Override for valid moves
@@ -985,6 +988,7 @@ class ChessBoard extends JPanel {
 	        positionY = 0;
 	        color = "black";
 	        displayPiece = new ImageIcon(getClass().getResource("img/bN.png"));
+			pieceType = "blackKnight";
 	    }
 
 	    // Override for valid moves
@@ -1036,6 +1040,7 @@ class ChessBoard extends JPanel {
 			positionY = 0;
 			color = "black";
 			displayPiece = new ImageIcon(getClass().getResource("img/bB.png"));
+			pieceType = "blackBishop";
 		}
 
 		// Override for valid moves
@@ -1217,10 +1222,7 @@ class ChessBoard extends JPanel {
 						if ((isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("white"))
 							|| (!isWhiteTurn && pieces[oldRowSelected][oldColSelected].color.equals("black"))) {
 
-							// Check if the king is in check
-							if (!isInCheck()) {
-								; // Do nothing
-							} else if (pieces[oldRowSelected][oldColSelected].isValid()) {
+							if (pieces[oldRowSelected][oldColSelected].isValid()) {
 								// Check if move is valid
 
 								// Check for en passant
@@ -1228,23 +1230,52 @@ class ChessBoard extends JPanel {
 									enPassant = false;
 								} else if (pieces[oldRowSelected][oldColSelected].canCastle) {
 									// Check for attempt to castle
+									boolean isValidCastle = true;
+
 									if (newColSelected > oldColSelected) {
 										// Right castle
-										pieces[oldRowSelected][oldColSelected].canCastle = false;
-										castleRight();
+										// Check if squares between king and rook are clear and not under threat
+										for (int col = oldColSelected + 1; col < newColSelected; col++) {
+											if (pieces[oldRowSelected][col] != null || isInCheck()) {
+												isValidCastle = false;
+												break;
+											}
+										}
+
+										if (isValidCastle) {
+											pieces[oldRowSelected][oldColSelected].canCastle = false;
+											castleRight();
+										}
 									} else {
 										// Left castle
-										pieces[oldRowSelected][oldColSelected].canCastle = false;
-										castleLeft();
+										// Check if squares between king and rook are clear and not under threat
+										for (int col = oldColSelected - 1; col > newColSelected; col--) {
+											if (pieces[oldRowSelected][col] != null || isInCheck()) {
+												isValidCastle = false;
+												break;
+											}
+										}
+
+										if (isValidCastle) {
+											pieces[oldRowSelected][oldColSelected].canCastle = false;
+											castleLeft();
+										}
 									}
 								} else {
 									// Else move the piece
 									pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
 									pieces[oldRowSelected][oldColSelected] = null;
-								}
 
-								// Do the turn
-								isWhiteTurn = !isWhiteTurn;
+									// Check if the king is in check
+									if (isInCheck()) {
+										// Invalid move made, king is still in check
+										pieces[oldRowSelected][oldColSelected] = pieces[newRowSelected][newColSelected];
+    									pieces[newRowSelected][newColSelected] = null;
+									} else {
+										// Do the turn
+										isWhiteTurn = !isWhiteTurn;
+									}
+								}
 							} else {
 								reset();
 								return;
@@ -1272,6 +1303,7 @@ class ChessBoard extends JPanel {
 					} else {
 						turnIndicator.setText("Black's turn");
 					}
+
 					// Reset row and column trackers
 					oldRowSelected = -1;
 					oldColSelected = -1;
@@ -1400,28 +1432,236 @@ class ChessBoard extends JPanel {
 		repaint();
 	}
 
-	// For checking if either king is in check
 	private boolean isInCheck() {
-		// Check the king for the current player
+		// For checking attacking pieces
+		String currentColor;
+
+		// Do the check
 		if (isWhiteTurn) {
+			currentColor = "white";
+
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < cols; j++) {
 					if (pieces[i][j] != null && pieces[i][j].pieceType.equals("whiteKing")) {
 						// Check lateral movements
-						for (int k = i - 1; k >= 0; k--) {
-							if (pieces[k][j] != null) {
-								if (pieces[k][j].pieceType.equals("blackRook")
-									|| pieces[k][j].pieceType.equals("blackQueen")) {
-									return false;
-								} else
-									break;
-							}
-						}
+						if (checkLateralMoves(i, j, currentColor))
+							return true;
+						// Check diagonal movements
+						if (checkDiagonalMoves(i, j, currentColor))
+							return true;
+						// Check knight movements
+						if (checkKnightMoves(i, j, currentColor))
+							return true;
+						// Check pawn movements
+						if (checkPawnMoves(i, j, currentColor))
+							return true;
 					}
 				}
 			}
-		} 
-		return true;
+		} else {
+			currentColor = "black";
+
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < cols; j++) {
+					if (pieces[i][j] != null && pieces[i][j].pieceType.equals("blackKing")) {
+						// Check lateral movements
+						if (checkLateralMoves(i, j, currentColor))
+							return true;
+						// Check diagonal movements
+						if (checkDiagonalMoves(i, j, currentColor))
+							return true;
+						// Check knight movements
+						if (checkKnightMoves(i, j, currentColor))
+							return true;
+						// Check pawn movements
+						if (checkPawnMoves(i, j, currentColor))
+							return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	// Checks lateral moves for the king
+	private boolean checkLateralMoves(int i, int j, String currentColor) {
+		String currentRook, currentQueen;
+
+		// Get the piece opposition to check
+		if (currentColor.equals("white")) {
+			currentRook = "blackRook";
+			currentQueen = "blackQueen";
+		} else {
+			currentRook = "whiteRook";
+			currentQueen = "whiteQueen";
+		}
+
+		// Upwards
+		for (int k = i - 1; k >= 0; k--) {
+			if (pieces[k][j] != null) {
+				if (pieces[k][j].pieceType.equals(currentRook) || pieces[k][j].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		// Downwards
+		for (int k = i + 1; k < rows; k++) {
+			if (pieces[k][j] != null) {
+				if (pieces[k][j].pieceType.equals(currentRook) || pieces[k][j].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		// Left
+		for (int k = j - 1; k >= 0; k--) {
+			if (pieces[i][k] != null) {
+				if (pieces[i][k].pieceType.equals(currentRook) || pieces[i][k].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		// Right
+		for (int k = j + 1; k < cols; k++) {
+			if (pieces[i][k] != null) {
+				if (pieces[i][k].pieceType.equals(currentRook) || pieces[i][k].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		
+		// Otherwise
+		return false;
+	}
+
+	// Checks diagnonal moves for the king
+	private boolean checkDiagonalMoves(int i, int j, String currentColor) {
+		// Get the current color to check for
+		String currentBishop, currentQueen;
+
+		if (currentColor.equals("white")) {
+			currentBishop = "blackBishop";
+			currentQueen = "blackQueen";
+		} else {
+			currentBishop = "whiteBishop";
+			currentQueen = "whiteQueen";
+		}
+
+		// Upper left diagonal
+		for (int k = i - 1, l = j - 1; k >= 0 && l >= 0; k--, l--) {
+			if (pieces[k][l] != null) {
+				if (pieces[k][l].pieceType.equals(currentBishop) || pieces[k][l].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		// Upper right diagonal
+		for (int k = i - 1, l = j + 1; k >= 0 && l < cols; k--, l++) {
+			if (pieces[k][l] != null) {
+				if (pieces[k][l].pieceType.equals(currentBishop) || pieces[k][l].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		// Lower left diagonal
+		for (int k = i + 1, l = j - 1; k < rows && l >= 0; k++, l--) {
+			if (pieces[k][l] != null) {
+				if (pieces[k][l].pieceType.equals(currentBishop) || pieces[k][l].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+		// Lower right diagonal
+		for (int k = i + 1, l = j + 1; k < rows && l < cols; k++, l++) {
+			if (pieces[k][l] != null) {
+				if (pieces[k][l].pieceType.equals(currentBishop) || pieces[k][l].pieceType.equals(currentQueen)) {
+					return true;
+				} else {
+					break;
+				}
+			}
+		}
+
+		// Otherise
+		return false;
+	}
+
+	// For checking knight moves
+	private boolean checkKnightMoves(int i, int j, String currentColor) {
+		// Array to track possible knight move offsets
+		int[][] knightMoves = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
+
+		// Get the opposing knight color
+		String opposingKnight;
+		if (currentColor.equals("white")) 
+			opposingKnight = "blackKnight";
+		else
+			opposingKnight = "whiteKnight";
+
+		// Do the check
+		for (int m = 0; m < knightMoves.length; m++) {
+			int newRow = i + knightMoves[m][0];
+			int newCol = j + knightMoves[m][1];
+
+			if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols &&
+				pieces[newRow][newCol] != null && pieces[newRow][newCol].pieceType.equals(opposingKnight)) {
+				// Threatening opposing knight found
+				return true; 
+			}
+		}
+
+		// Otherwise
+    	return false;
+	}
+
+	// Check for opposing pawn checks
+	private boolean checkPawnMoves(int i, int j, String currentColor) {
+		// Get the opposing pawn color
+		String opposingPawn;
+		if (currentColor.equals("white"))
+			opposingPawn = "blackPawn";
+		else	
+			opposingPawn = "whitePawn";
+
+		// Check for threatening pawns based on their capturing direction
+		int pawnDirection = (currentColor.equals("white")) ? -1 : 1;
+
+		// Diagonal left capture
+		int leftCaptureRow = i + pawnDirection;
+		int leftCaptureCol = j - 1;
+
+		if (leftCaptureRow >= 0 && leftCaptureRow < rows && leftCaptureCol >= 0 && leftCaptureCol < cols &&
+			pieces[leftCaptureRow][leftCaptureCol] != null &&
+			pieces[leftCaptureRow][leftCaptureCol].pieceType.equals(opposingPawn)) {
+			// Threatening opposing pawn found
+			return true; 
+		}
+
+		// Diagonal right capture
+		int rightCaptureRow = i + pawnDirection;
+		int rightCaptureCol = j + 1;
+
+		if (rightCaptureRow >= 0 && rightCaptureRow < rows && rightCaptureCol >= 0 && rightCaptureCol < cols &&
+			pieces[rightCaptureRow][rightCaptureCol] != null &&
+			pieces[rightCaptureRow][rightCaptureCol].pieceType.equals(opposingPawn)) {
+			// Threatening opposing pawn found
+			return true; 
+		}
+
+		return false;
 	}
 
 	// Override for drawing
