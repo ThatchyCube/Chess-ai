@@ -264,6 +264,13 @@ class ChessBoard extends JPanel {
 					&& pieces[newRowSelected][oldColSelected + 3].pieceType.equals("whiteRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
+						// Check if the king is trying to move through a check
+						for (int i = 1; i <= 2; i++) {
+							if (isAttacked(oldRowSelected, oldColSelected + i, "white"))
+								return false;
+						}
+
+						// Else
 						canCastle = true;
 						movedAlready = true;
 						return true;
@@ -278,6 +285,13 @@ class ChessBoard extends JPanel {
 					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType.equals("whiteRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
+						// Check if the king is trying to move through a check
+						for (int i = 1; i <= 3; i++) {
+							if (isAttacked(oldRowSelected, oldColSelected - i, "white"))
+								return false;
+						}
+
+						// Else
 						canCastle = true;
 						movedAlready = true;
 						return true;
@@ -763,6 +777,13 @@ class ChessBoard extends JPanel {
 					&& pieces[newRowSelected][oldColSelected + 3].pieceType.equals("blackRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
+						// Check if the king is trying to move through a check
+						for (int i = 1; i <= 2; i++) {
+							if (isAttacked(oldRowSelected, oldColSelected + i, "black"))
+								return false;
+						}
+
+						// Else
 						canCastle = true;
 						movedAlready = true;
 						return true;
@@ -777,6 +798,13 @@ class ChessBoard extends JPanel {
 					&& pieces[newRowSelected][oldColSelected - 3] == null) && pieces[newRowSelected][oldColSelected - 4].pieceType.equals("blackRook")) {
 					// Check the king hasn't moved before
 					if (movedAlready == false) {
+						// Check if the king is trying to move through a check
+						for (int i = 1; i <= 3; i++) {
+							if (isAttacked(oldRowSelected, oldColSelected - i, "black"))
+								return false;
+						}
+
+						// Else
 						canCastle = true;
 						movedAlready = true;
 						return true;
@@ -1229,37 +1257,14 @@ class ChessBoard extends JPanel {
 								if (enPassant) {
 									enPassant = false;
 								} else if (pieces[oldRowSelected][oldColSelected].canCastle) {
-									// Check for attempt to castle
-									boolean isValidCastle = true;
-
 									if (newColSelected > oldColSelected) {
 										// Right castle
-										// Check if squares between king and rook are clear and not under threat
-										for (int col = oldColSelected + 1; col < newColSelected; col++) {
-											if (pieces[oldRowSelected][col] != null || isInCheck()) {
-												isValidCastle = false;
-												break;
-											}
-										}
-
-										if (isValidCastle) {
-											pieces[oldRowSelected][oldColSelected].canCastle = false;
-											castleRight();
-										}
+										pieces[oldRowSelected][oldColSelected].canCastle = false;
+										castleRight();
 									} else {
 										// Left castle
-										// Check if squares between king and rook are clear and not under threat
-										for (int col = oldColSelected - 1; col > newColSelected; col--) {
-											if (pieces[oldRowSelected][col] != null || isInCheck()) {
-												isValidCastle = false;
-												break;
-											}
-										}
-
-										if (isValidCastle) {
-											pieces[oldRowSelected][oldColSelected].canCastle = false;
-											castleLeft();
-										}
+										pieces[oldRowSelected][oldColSelected].canCastle = false;
+										castleLeft();
 									}
 								} else {
 									// Else move the piece
@@ -1271,11 +1276,11 @@ class ChessBoard extends JPanel {
 										// Invalid move made, king is still in check
 										pieces[oldRowSelected][oldColSelected] = pieces[newRowSelected][newColSelected];
     									pieces[newRowSelected][newColSelected] = null;
-									} else {
-										// Do the turn
-										isWhiteTurn = !isWhiteTurn;
-									}
+									} 
 								}
+
+								// Do the turn
+								isWhiteTurn = !isWhiteTurn;
 							} else {
 								reset();
 								return;
@@ -1404,20 +1409,18 @@ class ChessBoard extends JPanel {
 
 	// For castling kings to the right
 	private void castleRight() {
-		// Move the king and the rook
-		pieces[oldRowSelected][oldColSelected + 2] = pieces[oldRowSelected][oldColSelected];
-		pieces[oldRowSelected][oldColSelected + 1] = pieces[oldRowSelected][oldColSelected + 3];
+			pieces[oldRowSelected][oldColSelected + 2] = pieces[oldRowSelected][oldColSelected]; // Move the king
+			pieces[oldRowSelected][oldColSelected + 1] = pieces[oldRowSelected][oldColSelected + 3]; // Move the rook
 
-		// Leave the original squares empty
-		pieces[oldRowSelected][oldColSelected] = null;
-		pieces[oldRowSelected][oldColSelected + 3] = null;
+			// Leave the original squares empty
+			pieces[oldRowSelected][oldColSelected] = null;
+			pieces[oldRowSelected][oldColSelected + 3] = null;
 	}
 
 	// For castling kings to the left
 	private void castleLeft() {
-		// Move the king and the rook
-		pieces[oldRowSelected][oldColSelected - 2] = pieces[oldRowSelected][oldColSelected];
-		pieces[oldRowSelected][oldColSelected - 1] = pieces[oldRowSelected][oldColSelected - 4];
+		pieces[oldRowSelected][oldColSelected - 2] = pieces[oldRowSelected][oldColSelected]; // Move the king
+		pieces[oldRowSelected][oldColSelected - 1] = pieces[oldRowSelected][oldColSelected - 4]; // Move the rook
 
 		// Leave the original squares empty
 		pieces[oldRowSelected][oldColSelected] = null;
@@ -1662,6 +1665,24 @@ class ChessBoard extends JPanel {
 		}
 
 		return false;
+	}
+
+	// Checks whether a square is being attacked
+	private boolean isAttacked(int rowAttacked, int colAttacked, String currentColor) {
+		// Check lateral moves from the current square
+		boolean isLateralAttack = checkLateralMoves(rowAttacked, colAttacked, currentColor);
+
+		// Check diagonal moves from the current square
+		boolean isDiagonalAttack = checkDiagonalMoves(rowAttacked, colAttacked, currentColor);
+
+		// Check knight moves from the current square
+		boolean isKnightAttack = checkKnightMoves(rowAttacked, colAttacked, currentColor);
+
+		// Check pawn moves from the current square
+		boolean isPawnAttack = checkPawnMoves(rowAttacked, colAttacked, currentColor);
+
+		// Return true if any attack is detected
+		return isLateralAttack || isDiagonalAttack || isKnightAttack || isPawnAttack;
 	}
 
 	// Override for drawing
