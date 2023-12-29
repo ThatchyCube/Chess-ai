@@ -1256,6 +1256,9 @@ class ChessBoard extends JPanel {
 								// Check for en passant
 								if (enPassant) {
 									enPassant = false;
+
+									// Do the turn
+									isWhiteTurn = !isWhiteTurn;
 								} else if (pieces[oldRowSelected][oldColSelected].canCastle) {
 									if (newColSelected > oldColSelected) {
 										// Right castle
@@ -1276,11 +1279,11 @@ class ChessBoard extends JPanel {
 										// Invalid move made, king is still in check
 										pieces[oldRowSelected][oldColSelected] = pieces[newRowSelected][newColSelected];
     									pieces[newRowSelected][newColSelected] = null;
-									} 
+									} else {
+										// Do the turn
+										isWhiteTurn = !isWhiteTurn;
+									}
 								}
-
-								// Do the turn
-								isWhiteTurn = !isWhiteTurn;
 							} else {
 								reset();
 								return;
@@ -1415,6 +1418,9 @@ class ChessBoard extends JPanel {
 			// Leave the original squares empty
 			pieces[oldRowSelected][oldColSelected] = null;
 			pieces[oldRowSelected][oldColSelected + 3] = null;
+
+			// Do the turn
+			isWhiteTurn = !isWhiteTurn;
 	}
 
 	// For castling kings to the left
@@ -1425,6 +1431,9 @@ class ChessBoard extends JPanel {
 		// Leave the original squares empty
 		pieces[oldRowSelected][oldColSelected] = null;
 		pieces[oldRowSelected][oldColSelected - 4] = null;
+
+		// Do the turn
+		isWhiteTurn = !isWhiteTurn;
 	}
 
 	// For resetting a pieces position
