@@ -1270,15 +1270,18 @@ class ChessBoard extends JPanel {
 										castleLeft();
 									}
 								} else {
+									// For storing the piece in the square we move to 
+									Piece tempPiece = pieces[newRowSelected][newColSelected];
+
 									// Else move the piece
 									pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
 									pieces[oldRowSelected][oldColSelected] = null;
-
+									
 									// Check if the king is in check
 									if (isInCheck()) {
 										// Invalid move made, king is still in check
 										pieces[oldRowSelected][oldColSelected] = pieces[newRowSelected][newColSelected];
-    									pieces[newRowSelected][newColSelected] = null;
+    									pieces[newRowSelected][newColSelected] = tempPiece;
 									} else {
 										// Do the turn
 										isWhiteTurn = !isWhiteTurn;
