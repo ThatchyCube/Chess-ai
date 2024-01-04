@@ -133,6 +133,19 @@ class ChessBoard extends JPanel {
 					if (pieces[newRowSelected][newColSelected] != null 
 						&& pieces[newRowSelected][newColSelected].color.equals("black")) {
 						// Black piece can be diagnally captured
+
+						// Check for queening
+						int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+						int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+						if (pieces[oldRowSelected][oldColSelected] != null 
+							&& newRowSelected == 0) {
+							// Pawn can queen
+							pieces[oldRowSelected][oldColSelected] = new whiteQueen();
+							pieces[oldRowSelected][oldColSelected].positionX = currentX;
+							pieces[oldRowSelected][oldColSelected].positionY = currentY;
+						}
+
 						movedAlready = true;
 						return true;
 				}
@@ -145,6 +158,17 @@ class ChessBoard extends JPanel {
 			// Check if can take en passant
 			if (enPassantLeft && newRowSelected == oldRowSelected - 1 
 				&& newColSelected == oldColSelected - 1) {
+
+				// Check for queening
+				if (newRowSelected == 0) {
+					int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+					int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+					pieces[oldRowSelected][oldColSelected] = new whiteQueen();
+					pieces[oldRowSelected][oldColSelected].positionX = currentX;
+					pieces[oldRowSelected][oldColSelected].positionY = currentY;
+				}
+
 				// Do the move
 				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
 				pieces[oldRowSelected][oldColSelected] = null;
@@ -157,6 +181,17 @@ class ChessBoard extends JPanel {
 				return true;
 			} else if (enPassantRight && newRowSelected == oldRowSelected - 1
 				&& newColSelected == oldColSelected + 1) {
+
+				// Check for queening
+				if (newRowSelected == 0) {
+					int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+					int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+					pieces[oldRowSelected][oldColSelected] = new whiteQueen();
+					pieces[oldRowSelected][oldColSelected].positionX = currentX;
+					pieces[oldRowSelected][oldColSelected].positionY = currentY;
+				}
+
 				// Do the move
 				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
 				pieces[oldRowSelected][oldColSelected] = null;
@@ -190,6 +225,19 @@ class ChessBoard extends JPanel {
 				} else if (newColSelected == oldColSelected
 					&& newRowSelected == oldRowSelected - 1) {
 					// Pawn can move one square
+
+					// Check for queening
+					int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+					int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+					if (pieces[oldRowSelected][oldColSelected] != null 
+						&& newRowSelected == 0) {
+						// Pawn can queen
+						pieces[oldRowSelected][oldColSelected] = new whiteQueen();
+						pieces[oldRowSelected][oldColSelected].positionX = currentX;
+						pieces[oldRowSelected][oldColSelected].positionY = currentY;
+					}
+
 					movedAlready = true;
 					return true;
 				} else 
@@ -197,6 +245,19 @@ class ChessBoard extends JPanel {
 			} else if (newColSelected == oldColSelected
 				&& newRowSelected == oldRowSelected - 1) {
 				// Pawn can move one square
+
+				// Check for queening
+				int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+				int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+				if (pieces[oldRowSelected][oldColSelected] != null 
+					&& newRowSelected == 0) {
+					// Pawn can queen
+					pieces[oldRowSelected][oldColSelected] = new whiteQueen();
+					pieces[oldRowSelected][oldColSelected].positionX = currentX;
+					pieces[oldRowSelected][oldColSelected].positionY = currentY;
+				}
+
 				movedAlready = true;
 				return true;
 			} else
@@ -647,6 +708,20 @@ class ChessBoard extends JPanel {
 					if (pieces[newRowSelected][newColSelected] != null 
 						&& pieces[newRowSelected][newColSelected].color.equals("white")) {
 						// Black piece can be diagnally captured
+
+						// Check for queening
+						int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+						int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+						if (pieces[oldRowSelected][oldColSelected] != null 
+							&& newRowSelected == 7) {
+							// Pawn can queen
+							pieces[oldRowSelected][oldColSelected] = new blackQueen();
+							pieces[oldRowSelected][oldColSelected].positionX = currentX;
+							pieces[oldRowSelected][oldColSelected].positionY = currentY;
+						}
+
+						
 						movedAlready = true;
 						return true;
 				}
@@ -659,6 +734,17 @@ class ChessBoard extends JPanel {
 			// Check if can take en passant
 			if (enPassantLeft && newRowSelected == oldRowSelected + 1 
 				&& newColSelected == oldColSelected - 1) {
+
+				// Check for queening
+				if (newRowSelected == 7) {
+					int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+					int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+					pieces[oldRowSelected][oldColSelected] = new blackQueen();
+					pieces[oldRowSelected][oldColSelected].positionX = currentX;
+					pieces[oldRowSelected][oldColSelected].positionY = currentY;
+				}
+
 				// Do the move
 				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
 				pieces[oldRowSelected][oldColSelected] = null;
@@ -671,6 +757,17 @@ class ChessBoard extends JPanel {
 				return true;
 			} else if (enPassantRight && newRowSelected == oldRowSelected + 1
 				&& newColSelected == oldColSelected + 1) {
+
+				// Check for queening
+				if (newRowSelected == 7) {
+					int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+					int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+					pieces[oldRowSelected][oldColSelected] = new blackQueen();
+					pieces[oldRowSelected][oldColSelected].positionX = currentX;
+					pieces[oldRowSelected][oldColSelected].positionY = currentY;
+				}
+
 				// Do the move
 				pieces[newRowSelected][newColSelected] = pieces[oldRowSelected][oldColSelected];
 				pieces[oldRowSelected][oldColSelected] = null;
@@ -704,6 +801,19 @@ class ChessBoard extends JPanel {
 				} else if (newColSelected == oldColSelected
 					&& newRowSelected == oldRowSelected + 1) {
 					// Pawn can move one square
+
+					// Check for queening
+					int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+					int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+					if (pieces[oldRowSelected][oldColSelected] != null 
+						&& newRowSelected == 7) {
+						// Pawn can queen
+						pieces[oldRowSelected][oldColSelected] = new blackQueen();
+						pieces[oldRowSelected][oldColSelected].positionX = currentX;
+						pieces[oldRowSelected][oldColSelected].positionY = currentY;
+					}
+
 					movedAlready = true;
 					return true;
 				} else 
@@ -711,6 +821,19 @@ class ChessBoard extends JPanel {
 			} else if (newColSelected == oldColSelected
 				&& newRowSelected == oldRowSelected + 1) {
 				// Pawn can move one square
+
+				// Check for queening
+				int currentX = pieces[oldRowSelected][oldColSelected].positionX;
+				int currentY = pieces[oldRowSelected][oldColSelected].positionY;
+
+				if (pieces[oldRowSelected][oldColSelected] != null 
+					&& newRowSelected == 7) {
+					// Pawn can queen
+					pieces[oldRowSelected][oldColSelected] = new blackQueen();
+					pieces[oldRowSelected][oldColSelected].positionX = currentX;
+					pieces[oldRowSelected][oldColSelected].positionY = currentY;
+				}
+
 				movedAlready = true;
 				return true;
 			} else 
